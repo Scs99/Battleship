@@ -21,4 +21,8 @@ public class Battleship {
         //Test Daniel
     }
     
+    public void test1() {
+        // testmethode 1
+    }
+    
 }
