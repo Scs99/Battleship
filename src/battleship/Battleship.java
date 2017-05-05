@@ -18,6 +18,7 @@ public class Battleship {
         // TODO code application logic here
         // Test Louis
         // Test Maï
+        //Test Daniel
     }
     
 }
