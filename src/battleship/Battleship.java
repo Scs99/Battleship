@@ -21,4 +21,8 @@ public class Battleship {
         //Test Daniel
     }
     
+    public void getTemp(){
+        System.out.println("Temp");
+    }
+    
 }
