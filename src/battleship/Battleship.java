@@ -20,12 +20,6 @@ public class Battleship {
         // Test Maï
         //Test Daniel
     }
-    
-    public void test1() {
-        // testmethode 1
-    }
-    public void getTemp(){
-        System.out.println("Temp");
-    }
+
     
 }
