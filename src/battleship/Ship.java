@@ -13,15 +13,15 @@ import java.util.ArrayList;
  */
 public class Ship {
     public final int size;
-    public final ArrayList<Field> ListFields;
+    public final Field[] fields;
     
     public Ship(int size){
         this.size = size;
-        ListFields = new ArrayList<>(size);
+        fields = new Field[size];
     }
     
     public boolean isDestroyed(){
-        for(Field item : ListFields){
+        for(Field item : fields){
             if(item.getState() != FieldState.SHIP_HIT){
                 return false;
             }
@@ -30,7 +30,7 @@ public class Ship {
     }
     
     public boolean isCompleted(){
-        for(Field item : ListFields){
+        for(Field item : fields){
             if(item.getState() != FieldState.SHIP){
                 return false;
             }

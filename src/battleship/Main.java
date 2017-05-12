@@ -7,19 +7,13 @@ package battleship;
 
 /**
  *
- * @author Scs
+ * @author admin
  */
-public class Battleship {
-
-    /**
-     * @param args the command line arguments
-     */
+public class Main {
+    
     public static void main(String[] args) {
-        // TODO code application logic here
-        // Test Louis, new Name
-        // Test Maï
-        //Test Daniel
+        
     }
-
+    
     
 }
