@@ -3,13 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package network;
+package battleship.network;
 
 /**
  *
  * @author Maï
  */
-public class PlayRequest {
+public class PlayDiscover {
     
-    
+    private final boolean isBroadcast;
+
+    public PlayDiscover()
+    {
+        this.isBroadcast = true;
+    }
+     
 }

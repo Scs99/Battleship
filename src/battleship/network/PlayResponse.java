@@ -3,22 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package battleship;
+package battleship.network;
 
 /**
  *
  * @author Maï
  */
-public class HitRequest {
+public class PlayResponse {
     
-    public final int x;
-    public final int y;
+    private final boolean accepted;
 
-    public HitRequest(int x, int y)
+    
+    
+    public PlayResponse(boolean accepted)
     {
-        this.x = x;
-        this.y = y;
+        this.accepted = accepted;       // false if accepted!
     }
-    
-    
+     
 }
