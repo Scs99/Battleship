@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package network;
+package battleship;
 
 /**
  *
@@ -11,10 +11,10 @@ package network;
  */
 public class HitResponse extends HitRequest{
     
-    private final boolean hit;
-    private final boolean shipDestroyed;
+    public final boolean hit;
+    public final boolean shipDestroyed;
 
-    public HitResponse(boolean hit, boolean shipDestroyed, int x, int y)
+    public HitResponse(int x, int y, boolean hit, boolean shipDestroyed)
     {
         super(x, y);
         this.hit = hit;

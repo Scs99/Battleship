@@ -52,5 +52,13 @@ public class Playfield {
         
     }
     
-    
+    public Field getFieldFromCoordinate(int x, int y){
+        for(Field field : this.fields)
+        {
+            if((field.x == x) && (field.y == y)){
+                return field;
+            }
+        }
+        return null;
+    }
 }

@@ -19,31 +19,49 @@ public class Game {
     public final Playfield opponentPlayfield;
     public final Ship[] ships;
 
-    public Game(Participant opponent) {
+    public Game(final Participant opponent) {
 
         this.opponent = opponent;
         this.myPlayfield = new Playfield(10);
         this.opponentPlayfield = new Playfield(10);
-        this.ships = new Ship[5];
-
+        this.ships = new Ship[]{
+            new Ship(4),
+            new Ship(3),
+            new Ship(2),
+            new Ship(2),
+            new Ship(2)
+        };
     }
 
-    Ship getShipOfField(Field myField) {
-        for (Field field : myPlayfield.fields) {
-            for (Ship ship : ships) {
-                if (Arrays.asList(ship.fields).contains(myField)) {
-                    return ship;
-                }
+    private Ship getShipOfField(final Field myField) {
+        for (Ship ship : ships) {
+            if (Arrays.asList(ship.fields).contains(myField)) {
+                return ship;
             }
         }
+        return null;
     }
 
-    void setUpShips() {
-        this.ships[0] = new Ship(4);
-        this.ships[1] = new Ship(3);
-        this.ships[2] = new Ship(2);
-        this.ships[3] = new Ship(2);
-        this.ships[0] = new Ship(2);
+    public void shootAt(final int x, final int y) {
+        opponentPlayfield.shootAt(x, y);
+        // to Networker HitRequest(x, y);        
     }
 
+    public void shootAtReponse(final HitResponse hitResponse) {
+        if(hitResponse.hit){
+            opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
+            opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
+        }      
+    }
+
+    public void hitReceived(final HitRequest hitRequest) {
+        myPlayfield.shootAt(hitRequest.x, hitRequest.y);
+        Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
+
+        if (possibleShip == null) {
+            // to Networker HitResponse(x, y, false, false);
+        }
+
+        // to Networker HitResponse(x, y, true, possibleShip.isDestroyed());
+    }
 }

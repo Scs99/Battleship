@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package network;
+package battleship;
 
 /**
  *
@@ -11,8 +11,8 @@ package network;
  */
 public class HitRequest {
     
-    private final int x;
-    private final int y;
+    public final int x;
+    public final int y;
 
     public HitRequest(int x, int y)
     {
