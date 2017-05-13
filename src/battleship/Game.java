@@ -5,6 +5,9 @@
  */
 package battleship;
 
+import battleship.network.HitRequest;
+import battleship.network.HitResponse;
+import battleship.network.Participant;
 import java.util.Arrays;
 
 /**
