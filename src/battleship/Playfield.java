@@ -18,7 +18,7 @@ public class Playfield {
     public Playfield(int playFieldWidth){
         
         this.playFieldWidth = playFieldWidth;
-        fields = new Field[playFieldWidth];
+        fields = new Field[playFieldWidth*playFieldWidth];
         
         for(int y = 0; y < playFieldWidth; y++){
             for(int x = 0; x < playFieldWidth; x++){
@@ -48,9 +48,20 @@ public class Playfield {
         surroundedFields[6] = fields[(y+1)*10+(x-1)];
         surroundedFields[7] = fields[(y)*10+(x-1)];
         return surroundedFields;
-        
-        
+    
     }
+    
+    public Field[] getValideNeighbours(int x, int y){
+        Field[] valideNeigboursFields = new Field[4];
+        valideNeigboursFields[0] = fields[(y)*10+(x-1)];
+        valideNeigboursFields[1] = fields[(y-1)*10+(x)];
+        valideNeigboursFields[2] = fields[(y+1)*10+(x)];
+        valideNeigboursFields[3] = fields[(y)*10+(x+1)];
+        return valideNeigboursFields;
+    
+    }
+    
+    
     
     public Field getFieldFromCoordinate(int x, int y){
         for(Field field : this.fields)
