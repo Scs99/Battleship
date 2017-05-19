@@ -6,6 +6,7 @@
 package battleship;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
@@ -37,32 +38,75 @@ public class Playfield {
         
     }
     
-    public Field[] getSurrounding(int x, int y){
-        Field[] surroundedFields = new Field[8];
-        surroundedFields[0] = fields[(y-1)*10+(x-1)];
-        surroundedFields[1] = fields[(y-1)*10+(x)];
-        surroundedFields[2] = fields[(y-1)*10+(x+1)];
-        surroundedFields[3] = fields[(y)*10+(x+1)];
-        surroundedFields[4] = fields[(y+1)*10+(x+1)];
-        surroundedFields[5] = fields[(y+1)*10+(x)];
-        surroundedFields[6] = fields[(y+1)*10+(x-1)];
-        surroundedFields[7] = fields[(y)*10+(x-1)];
+    private boolean checkXBound(int x){
+        if((x >= 0) && (x < this.playFieldWidth)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    
+     private boolean checkYBound(int y){
+        if((y >= 0) && (y < this.playFieldWidth)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    
+    public ArrayList<Field> getSurrounding(int x, int y){
+        ArrayList<Field> surroundedFields = new ArrayList<>();
+       
+        if(checkXBound(x) && checkYBound(y-1)){
+            surroundedFields.add(fields[(y-1)*10+(x)]);
+        }
+        if(checkXBound(x+1) && checkYBound(y-1)){
+            surroundedFields.add(fields[(y-1)*10+(x+1)]);
+        }
+        if(checkXBound(x+1) && checkYBound(y)){
+            surroundedFields.add(fields[(y)*10+(x+1)]);
+        }
+        if(checkXBound(x+1) && checkYBound(y+1)){
+            surroundedFields.add(fields[(y+1)*10+(x+1)]);
+        }
+        if(checkXBound(x) && checkYBound(y+1)){
+            surroundedFields.add(fields[(y+1)*10+(x)]);
+        }
+        if(checkXBound(x-1) && checkYBound(y+1)){
+            surroundedFields.add(fields[(y+1)*10+(x-1)]);
+        }
+        if(checkXBound(x-1) && checkYBound(y)){
+             surroundedFields.add(fields[(y)*10+(x-1)]); 
+        }
+        if(checkXBound(x-1) && checkYBound(y-1)){
+             surroundedFields.add(fields[(y-1)*10+(x-1)]); 
+        }
         return surroundedFields;
     
     }
     
-    public Field[] getValideNeighbours(int x, int y){
-        Field[] valideNeigboursFields = new Field[4];
-        valideNeigboursFields[0] = fields[(y)*10+(x-1)];
-        valideNeigboursFields[1] = fields[(y-1)*10+(x)];
-        valideNeigboursFields[2] = fields[(y+1)*10+(x)];
-        valideNeigboursFields[3] = fields[(y)*10+(x+1)];
+    public ArrayList<Field> getValideNeighbours(int x, int y){
+        ArrayList<Field> valideNeigboursFields = new ArrayList<>();
+        if(checkXBound(x) && checkYBound(y-1)){
+            valideNeigboursFields.add(fields[(y-1)*10+(x)]);
+        }
+        if(checkXBound(x+1) && checkYBound(y)){
+            valideNeigboursFields.add(fields[(y)*10+(x+1)]);
+        }
+        if(checkXBound(x) && checkYBound(y+1)){
+            valideNeigboursFields.add(fields[(y+1)*10+(x)]);
+        }
+        if(checkXBound(x-1) && checkYBound(y)){
+            valideNeigboursFields.add(fields[(y)*10+(x-1)]);
+        }
+       
+        
         return valideNeigboursFields;
     
     }
-    
-    
-    
+   
     public Field getFieldFromCoordinate(int x, int y){
         for(Field field : this.fields)
         {
