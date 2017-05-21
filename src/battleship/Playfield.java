@@ -116,4 +116,13 @@ public class Playfield {
         }
         return null;
     }
+    
+    public void Print(){
+        for(int y = 0; y < playFieldWidth; y++){
+            for(int x = 0; x < playFieldWidth; x++){
+                System.out.print(fields[y*10+x].getState().ordinal() + "");
+            }
+            System.out.println("");
+        }
+    }
 }
