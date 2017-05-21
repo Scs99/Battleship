@@ -71,13 +71,13 @@ public class Game {
             }
 
             for (Ship ship : ships) {
-                if(ship.isCompleted()){
-                for (Field shipField : ship.fields) {
-                    ArrayList<Field> surrounding = myPlayfield.getSurrounding(shipField.x, shipField.y);
-                    if (surrounding.contains(toBePlaced)) {
-                        return false;
+                if (ship.isCompleted()) {
+                    for (Field shipField : ship.fields) {
+                        ArrayList<Field> surrounding = myPlayfield.getSurrounding(shipField.x, shipField.y);
+                        if (surrounding.contains(toBePlaced)) {
+                            return false;
+                        }
                     }
-                }                    
                 }
             }
 
@@ -91,6 +91,11 @@ public class Game {
         Field toBePlaced = myPlayfield.getFieldFromCoordinate(x, y);
 
         if (shipToPlace.fields.get(0).y == shipToPlace.fields.get(1).y) {
+
+            if (toBePlaced.y != shipToPlace.fields.get(0).y) {
+                return false;
+            }
+
             int xMax = shipToPlace.fields.get(0).x;
             int xMin = shipToPlace.fields.get(0).x;
 
@@ -104,11 +109,16 @@ public class Game {
             }
 
             if ((toBePlaced.x == (xMax + 1)) || (toBePlaced.x == (xMin - 1))) {
-                    shipToPlace.addShipPart(toBePlaced);
-                    myPlayfield.placeAt(x, y);
-                    return true;
+                shipToPlace.addShipPart(toBePlaced);
+                myPlayfield.placeAt(x, y);
+                return true;
             }
         } else if (shipToPlace.fields.get(0).x == shipToPlace.fields.get(1).x) {
+
+            if (toBePlaced.x != shipToPlace.fields.get(0).x) {
+                return false;
+            }
+
             int yMax = shipToPlace.fields.get(0).y;
             int yMin = shipToPlace.fields.get(0).y;
 
@@ -122,9 +132,9 @@ public class Game {
             }
 
             if ((toBePlaced.y == (yMax + 1)) || (toBePlaced.y == (yMin - 1))) {
-                    shipToPlace.addShipPart(toBePlaced);
-                    myPlayfield.placeAt(x, y);
-                    return true;
+                shipToPlace.addShipPart(toBePlaced);
+                myPlayfield.placeAt(x, y);
+                return true;
             }
         }
         return false;
