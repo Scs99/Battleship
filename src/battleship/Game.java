@@ -17,11 +17,32 @@ import java.util.ArrayList;
  */
 public class Game {
 
+    /**
+     * Der Gegenspieler.
+     */
     public final Participant opponent;
+
+    /**
+     * Das eigene Spielfeld, beeinhaltet die eigenen Schiffe.
+     */
     public final Playfield myPlayfield;
+
+    /**
+     * Das gegnerische Spielfeld, beeinhaltet Schüsse und getroffene
+     * Schiffsteile.
+     */
     public final Playfield opponentPlayfield;
+
+    /**
+     * Die eigenen Schiffe.
+     */
     public final ArrayList<Ship> ships;
 
+    /**
+     * Das eigentliche Spiel.
+     *
+     * @param opponent
+     */
     public Game(final Participant opponent) {
 
         this.opponent = opponent;
@@ -33,21 +54,22 @@ public class Game {
         this.ships.add(new Ship(2));
         this.ships.add(new Ship(2));
         this.ships.add(new Ship(2));
-
     }
 
-    private Ship getShipOfField(final Field myField) {
-        for (Ship ship : ships) {
-            if (ship.fields.contains(myField)) {
-                return ship;
-            }
-        }
-        return null;
-    }
-
+    /**
+     * Lässt auf dem Spielfeld ein Schiffteil platzieren.
+     *
+     * @param shipToPlace Das Schiff von welchem ein Schiffteil platziert werden
+     * soll.
+     * @param x Die X-Koordinate an welcher der Schiffteil platziert werden
+     * soll.
+     * @param y Die Y-Koordinate an welcher der Schiffteil platziert werden
+     * soll.
+     * @return TRUE falls platzieren erfolgtreich war, FALSE wenn nicht.
+     */
     public boolean placeShip(Ship shipToPlace, int x, int y) {
         if (shipToPlace.isCompleted()) {
-            return true;
+            return false;
         }
         // Erstes Element darf nicht neben existierenden Schiffen platziert werden
         if (shipToPlace.nrOfPlacedParts() == 0) {
@@ -57,8 +79,7 @@ public class Game {
                     return false;
                 }
             }
-            shipToPlace.addShipPart(myPlayfield.getFieldFromCoordinate(x, y));
-            myPlayfield.placeAt(x, y);
+            addAndMarkShipPart(shipToPlace, myPlayfield.getFieldFromCoordinate(x, y));
             return true;
         }
         // Zweites Element darf nicht neben exisiterenden Schiffen platziert werden
@@ -81,8 +102,7 @@ public class Game {
                 }
             }
 
-            shipToPlace.addShipPart(myPlayfield.getFieldFromCoordinate(x, y));
-            myPlayfield.placeAt(x, y);
+            addAndMarkShipPart(shipToPlace, toBePlaced);
             return true;
         }
 
@@ -109,8 +129,7 @@ public class Game {
             }
 
             if ((toBePlaced.x == (xMax + 1)) || (toBePlaced.x == (xMin - 1))) {
-                shipToPlace.addShipPart(toBePlaced);
-                myPlayfield.placeAt(x, y);
+                addAndMarkShipPart(shipToPlace, toBePlaced);
                 return true;
             }
         } else if (shipToPlace.fields.get(0).x == shipToPlace.fields.get(1).x) {
@@ -132,19 +151,29 @@ public class Game {
             }
 
             if ((toBePlaced.y == (yMax + 1)) || (toBePlaced.y == (yMin - 1))) {
-                shipToPlace.addShipPart(toBePlaced);
-                myPlayfield.placeAt(x, y);
+                addAndMarkShipPart(shipToPlace, toBePlaced);
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Schiesst auf das Feld des Gegners.
+     *
+     * @param x Die X-Koordinate an welcher der Schuss erfolgen soll.
+     * @param y Die Y-Koordinate an welcher der Schuss erfolgen soll.
+     */
     public void shootAt(final int x, final int y) {
         opponentPlayfield.shootAt(x, y);
         // to Networker HitRequest(x, y);        
     }
 
+    /**
+     * Verarbeitet die Rückmeldung des gegners auf einen Schuss.
+     *
+     * @param hitResponse Die Antwort des Gegners auf den Schuss.
+     */
     public void shootAtReponse(final HitResponse hitResponse) {
         if (hitResponse.hit) {
             opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
@@ -152,6 +181,11 @@ public class Game {
         }
     }
 
+    /**
+     * Verarbeitet denn Schuss eines Gegners auf das eigene Feld.
+     *
+     * @param hitRequest Der Schuss des Gegners.
+     */
     public void hitReceived(final HitRequest hitRequest) {
         myPlayfield.shootAt(hitRequest.x, hitRequest.y);
         Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
@@ -161,5 +195,19 @@ public class Game {
         } else {
             // to Networker HitResponse(x, y, true, possibleShip.isDestroyed());   
         }
+    }
+
+    private Ship getShipOfField(final Field myField) {
+        for (Ship ship : ships) {
+            if (ship.fields.contains(myField)) {
+                return ship;
+            }
+        }
+        return null;
+    }
+
+    private void addAndMarkShipPart(Ship ship, Field shipPart) {
+        ship.addShipPart(shipPart);
+        myPlayfield.placeAt(shipPart.x, shipPart.y);
     }
 }
