@@ -39,6 +39,23 @@ public class Game {
     public final ArrayList<Ship> ships;
 
     /**
+     * Die eigenen Schiffe.
+     */
+    private boolean myTurn;
+
+    public void startMyTurn() {
+        myTurn = true;
+    }
+
+    public void endMyTurn() {
+        myTurn = false;
+    }
+
+    public boolean isMyTurn() {
+        return myTurn;
+    }
+
+    /**
      * Das eigentliche Spiel.
      *
      * @param opponent
@@ -54,6 +71,7 @@ public class Game {
         this.ships.add(new Ship(2));
         this.ships.add(new Ship(2));
         this.ships.add(new Ship(2));
+        this.myTurn = false;
     }
 
     /**
@@ -164,9 +182,11 @@ public class Game {
      * @param x Die X-Koordinate an welcher der Schuss erfolgen soll.
      * @param y Die Y-Koordinate an welcher der Schuss erfolgen soll.
      */
-    public void shootAt(final int x, final int y) {
+    public HitRequest shootAtOpponent(final int x, final int y) {
         opponentPlayfield.shootAt(x, y);
-        // to Networker HitRequest(x, y);        
+        HitRequest hitRequest = new HitRequest(x, y);
+        // to Networker HitRequest(x, y);     
+        return hitRequest;
     }
 
     /**
@@ -174,10 +194,13 @@ public class Game {
      *
      * @param hitResponse Die Antwort des Gegners auf den Schuss.
      */
-    public void shootAtReponse(final HitResponse hitResponse) {
+    public void shotAftermath(final HitResponse hitResponse) {
         if (hitResponse.hit) {
             opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
             opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
+            startMyTurn();
+        } else {
+            endMyTurn();
         }
     }
 
@@ -186,15 +209,21 @@ public class Game {
      *
      * @param hitRequest Der Schuss des Gegners.
      */
-    public void hitReceived(final HitRequest hitRequest) {
+    public HitResponse shotRecieved(final HitRequest hitRequest) {
+        HitResponse hitResponse;
         myPlayfield.shootAt(hitRequest.x, hitRequest.y);
         Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
 
         if (possibleShip == null) {
+            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
+            startMyTurn();
             // to Networker HitResponse(x, y, false, false);
         } else {
-            // to Networker HitResponse(x, y, true, possibleShip.isDestroyed());   
+            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
+            // to Networker HitResponse(x, y, true, possibleShip.isDestroyed());  
+            endMyTurn();
         }
+        return hitResponse;
     }
 
     private Ship getShipOfField(final Field myField) {
