@@ -43,14 +43,24 @@ public class Game {
      */
     private boolean myTurn;
 
+    /**
+     * Startet den Spielzug.
+     */
     public void startMyTurn() {
         myTurn = true;
     }
 
+    /**
+     * Beendet den Spielzug.
+     */
     public void endMyTurn() {
         myTurn = false;
     }
 
+    /**
+     * Fragt ab ob der Spieler aktuell am Zug ist oder nicht.
+     * @return TRUE wenn der Spieler am Zug ist, FALSE wenn nicht.
+     */
     public boolean isMyTurn() {
         return myTurn;
     }
@@ -58,7 +68,7 @@ public class Game {
     /**
      * Das eigentliche Spiel.
      *
-     * @param opponent
+     * @param opponent Der Gegenspieler.
      */
     public Game(final Participant opponent) {
 
@@ -85,7 +95,7 @@ public class Game {
      * soll.
      * @return TRUE falls platzieren erfolgtreich war, FALSE wenn nicht.
      */
-    public boolean placeShip(Ship shipToPlace, int x, int y) {
+    public boolean placeShip(final Ship shipToPlace, final int x, final int y) {
         if (shipToPlace.isCompleted()) {
             return false;
         }
@@ -235,7 +245,7 @@ public class Game {
         return null;
     }
 
-    private void addAndMarkShipPart(Ship ship, Field shipPart) {
+    private void addAndMarkShipPart(final Ship ship, final Field shipPart) {
         ship.addShipPart(shipPart);
         myPlayfield.placeAt(shipPart.x, shipPart.y);
     }

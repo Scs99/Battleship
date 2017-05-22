@@ -5,12 +5,7 @@
  */
 package battleship;
 
-import battleship.network.HitRequest;
-import battleship.network.HitResponse;
 import battleship.network.Participant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,7 +90,7 @@ public class SimulatedGameTest {
         assertTrue("Player2 Ship 2 destroyed.",player2.ships.get(2).isDestroyed());
         assertTrue("4",player1.isMyTurn());
         assertFalse("5",player2.isMyTurn());     
-        shootingHandler(player1, player2, 5, 2); // Shot in water 
+        shootingHandler(player1, player2, 5, 2); // Schuss ins Wasser
         assertTrue("6", player2.isMyTurn());
         assertFalse("7", player1.isMyTurn());    
         
@@ -123,23 +118,21 @@ public class SimulatedGameTest {
         shootingHandler(player2, player1, 3, 5); 
         shootingHandler(player1, player2, 7, 5);   
         
-        // Player2 destroys all leftover ships of Player1
+        // Player2 zerstört alle übrigen Schiffe von Player1
         shootingHandler(player2, player1, 7, 4); 
         shootingHandler(player2, player1, 7, 5); 
         shootingHandler(player2, player1, 7, 6);
         assertTrue("Player1 Ship 1 destroyed.",player1.ships.get(1).isDestroyed());
         
-        
-        shootingHandler(player2, player1, 5, 2); 
-        shootingHandler(player2, player1, 6, 2); 
-                
-        assertTrue("Player1 Ship 3 destroyed.",player1.ships.get(3).isDestroyed());
-        
         shootingHandler(player2, player1, 1, 1); 
         shootingHandler(player2, player1, 1, 2); 
         assertTrue("Player1 Ship 2 destroyed.",player1.ships.get(2).isDestroyed());
         
-        
+        shootingHandler(player2, player1, 5, 2); 
+        shootingHandler(player2, player1, 6, 2);                
+        assertTrue("Player1 Ship 3 destroyed.",player1.ships.get(3).isDestroyed());
+                
+        // Spielfelder ausgeben
         player1.opponentPlayfield.Print();
         System.out.println("");
         player1.myPlayfield.Print();
