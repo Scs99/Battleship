@@ -38,10 +38,17 @@ public class Game {
      */
     public final ArrayList<Ship> ships;
 
-    /**
-     * Die eigenen Schiffe.
-     */
     private boolean myTurn;
+    private String statusText;
+
+    /**
+     * Gibt den aktuellen Status des Spiels als Stirng zurück.
+     *
+     * @return Den aktuellen Spielstatus.
+     */
+    public String getStatusText() {
+        return statusText;
+    }
 
     /**
      * Startet den Spielzug.
@@ -59,6 +66,7 @@ public class Game {
 
     /**
      * Fragt ab ob der Spieler aktuell am Zug ist oder nicht.
+     *
      * @return TRUE wenn der Spieler am Zug ist, FALSE wenn nicht.
      */
     public boolean isMyTurn() {
@@ -82,6 +90,7 @@ public class Game {
         this.ships.add(new Ship(2));
         this.ships.add(new Ship(2));
         this.myTurn = false;
+        this.statusText = "Willkommen zum Spiel Battleship.";
     }
 
     /**
@@ -97,6 +106,7 @@ public class Game {
      */
     public boolean placeShip(final Ship shipToPlace, final int x, final int y) {
         if (shipToPlace.isCompleted()) {
+            this.statusText = "Das ausgewählte Schiff wurde bereits platziert.";
             return false;
         }
         // Erstes Element darf nicht neben existierenden Schiffen platziert werden
@@ -104,6 +114,7 @@ public class Game {
             ArrayList<Field> surrounding = myPlayfield.getSurrounding(x, y);
             for (Field field : surrounding) {
                 if (field.getState() == FieldState.SHIP) {
+                    this.statusText = "Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.";
                     return false;
                 }
             }
@@ -116,6 +127,7 @@ public class Game {
             Field toBePlaced = myPlayfield.getFieldFromCoordinate(x, y);
             ArrayList<Field> validNeighbours = myPlayfield.getValideNeighbours(shipToPlace.fields.get(0).x, shipToPlace.fields.get(0).y);
             if (!validNeighbours.contains(toBePlaced)) {
+                this.statusText = "Der zweite Schiffteil muss an den ersten angrenzen. Versuchen Sie ein anderes Feld.";
                 return false;
             }
 
@@ -124,6 +136,7 @@ public class Game {
                     for (Field shipField : ship.fields) {
                         ArrayList<Field> surrounding = myPlayfield.getSurrounding(shipField.x, shipField.y);
                         if (surrounding.contains(toBePlaced)) {
+                            this.statusText = "Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.";
                             return false;
                         }
                     }
@@ -141,6 +154,7 @@ public class Game {
         if (shipToPlace.fields.get(0).y == shipToPlace.fields.get(1).y) {
 
             if (toBePlaced.y != shipToPlace.fields.get(0).y) {
+                this.statusText = "Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.";
                 return false;
             }
 
@@ -163,6 +177,7 @@ public class Game {
         } else if (shipToPlace.fields.get(0).x == shipToPlace.fields.get(1).x) {
 
             if (toBePlaced.x != shipToPlace.fields.get(0).x) {
+                this.statusText = "Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.";
                 return false;
             }
 
@@ -195,7 +210,8 @@ public class Game {
     public HitRequest shootAtOpponent(final int x, final int y) {
         opponentPlayfield.shootAt(x, y);
         HitRequest hitRequest = new HitRequest(x, y);
-        // to Networker HitRequest(x, y);     
+        this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";
+        // To Networker: Send hitRequest;    
         return hitRequest;
     }
 
@@ -208,8 +224,16 @@ public class Game {
         if (hitResponse.hit) {
             opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
             opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
+            if (hasWon()) {
+                this.statusText = "Gewonnen! Alle gegnerischen Schiffe zerstört!";
+            } else if (hitResponse.shipDestroyed) {
+                this.statusText = "Gegnerisches Schiff zerstört! Schiessen Sie erneut.";
+            } else {
+                this.statusText = "Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.";
+            }
             startMyTurn();
         } else {
+            this.statusText = "Schuss ins Wasser. Warten sie auf den Zug des Gegners.";
             endMyTurn();
         }
     }
@@ -226,13 +250,20 @@ public class Game {
 
         if (possibleShip == null) {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
+            this.statusText = "Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.";
             startMyTurn();
-            // to Networker HitResponse(x, y, false, false);
         } else {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
-            // to Networker HitResponse(x, y, true, possibleShip.isDestroyed());  
+            if (hasLost()){
+                this.statusText = "Verlorern! Alle Ihre Schiffe wurden zerstört.";
+            } else if (possibleShip.isDestroyed()) {
+                this.statusText = "Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.";
+            } else {
+                this.statusText = "Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.";
+            }
             endMyTurn();
         }
+        // To Networker: Send hitResponse;
         return hitResponse;
     }
 
@@ -248,5 +279,32 @@ public class Game {
     private void addAndMarkShipPart(final Ship ship, final Field shipPart) {
         ship.addShipPart(shipPart);
         myPlayfield.placeAt(shipPart.x, shipPart.y);
+        this.statusText = "Sie haben " + ship.nrOfPlacedParts() + "/" + ship.size + " Schiffteilen platziert.";
+    }
+
+    private boolean hasLost() {
+        for (Ship ship : ships) {
+            if (!ship.isDestroyed()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean hasWon() {
+        int nrOfShipParts = 0;
+        int nrOfDestroyedShipParts = 0;
+        for (Ship ship : ships) {
+            nrOfShipParts += ship.size;
+        }
+        for (Field field : opponentPlayfield.fields) {
+            if (field.getState() == FieldState.SHIP_HIT) {
+                nrOfDestroyedShipParts++;
+            }
+        }
+        if (nrOfDestroyedShipParts == nrOfShipParts) {
+            return true;
+        }
+        return false;
     }
 }
