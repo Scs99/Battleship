@@ -7,6 +7,8 @@ package battleship;
 
 import battleship.network.HitRequest;
 import battleship.network.HitResponse;
+import battleship.network.NetworkPackage;
+import battleship.network.Networker;
 import battleship.network.Participant;
 import java.util.ArrayList;
 
@@ -15,13 +17,10 @@ import java.util.ArrayList;
  *
  * @author Louis Rast
  */
-public class Game {
+public class Game implements IHitResponseReceived, IHitRequestReceived {
 
-    /**
-     * Der Gegenspieler.
-     */
-    public final Participant opponent;
-
+    private final Networker myNetworker;
+    
     /**
      * Das eigene Spielfeld, beeinhaltet die eigenen Schiffe.
      */
@@ -76,11 +75,12 @@ public class Game {
     /**
      * Das eigentliche Spiel.
      *
-     * @param opponent Der Gegenspieler.
+     * @param networker
      */
-    public Game(final Participant opponent) {
-
-        this.opponent = opponent;
+    public Game(final Networker networker) {
+        
+        this.myNetworker = networker;
+        
         this.myPlayfield = new Playfield(10);
         this.opponentPlayfield = new Playfield(10);
         this.ships = new ArrayList<>(0);
@@ -91,6 +91,12 @@ public class Game {
         this.ships.add(new Ship(2));
         this.myTurn = false;
         this.statusText = "Willkommen zum Spiel Battleship.";
+
+        this.myNetworker.registerHitRequest(this);
+        this.myNetworker.registerHitResponse(this);
+        
+        //this.opponent.registerHitRequest(this); //ÜBERGEBEN UNSERE INSTANZ: wENN HIT REQUEST KOMMT rufe auf dieser instanz (this) methode auf.
+        //this.opponent.registerHitResponse(this);
     }
 
     /**
@@ -210,61 +216,9 @@ public class Game {
     public HitRequest shootAtOpponent(final int x, final int y) {
         opponentPlayfield.shootAt(x, y);
         HitRequest hitRequest = new HitRequest(x, y);
-        this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";
-        // To Networker: Send hitRequest;    
+        this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";  
+        myNetworker.send(new NetworkPackage(hitRequest, "HitRequest"));
         return hitRequest;
-    }
-
-    /**
-     * Verarbeitet die Rückmeldung des gegners auf einen Schuss.
-     *
-     * @param hitResponse Die Antwort des Gegners auf den Schuss.
-     */
-    public void shotAftermath(final HitResponse hitResponse) {
-        if (hitResponse.hit) {
-            opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
-            opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
-            if (hasWon()) {
-                this.statusText = "Gewonnen! Alle gegnerischen Schiffe zerstört!";
-            } else if (hitResponse.shipDestroyed) {
-                this.statusText = "Gegnerisches Schiff zerstört! Schiessen Sie erneut.";
-            } else {
-                this.statusText = "Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.";
-            }
-            startMyTurn();
-        } else {
-            this.statusText = "Schuss ins Wasser. Warten sie auf den Zug des Gegners.";
-            endMyTurn();
-        }
-    }
-
-    /**
-     * Verarbeitet denn Schuss eines Gegners auf das eigene Feld.
-     *
-     * @param hitRequest Der Schuss des Gegners.
-     */
-    public HitResponse shotRecieved(final HitRequest hitRequest) {
-        HitResponse hitResponse;
-        myPlayfield.shootAt(hitRequest.x, hitRequest.y);
-        Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
-
-        if (possibleShip == null) {
-            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
-            this.statusText = "Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.";
-            startMyTurn();
-        } else {
-            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
-            if (hasLost()){
-                this.statusText = "Verlorern! Alle Ihre Schiffe wurden zerstört.";
-            } else if (possibleShip.isDestroyed()) {
-                this.statusText = "Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.";
-            } else {
-                this.statusText = "Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.";
-            }
-            endMyTurn();
-        }
-        // To Networker: Send hitResponse;
-        return hitResponse;
     }
 
     private Ship getShipOfField(final Field myField) {
@@ -306,5 +260,58 @@ public class Game {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Verarbeitet die Rückmeldung des gegners auf einen Schuss.
+     *
+     * @param hitResponse Die Antwort des Gegners auf den Schuss.
+     */
+    @Override
+    public void onHitResponseReceived(final HitResponse hitResponse) {
+        if (hitResponse.hit) {
+            opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
+            opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
+            if (hasWon()) {
+                this.statusText = "Gewonnen! Alle gegnerischen Schiffe zerstört!";
+            } else if (hitResponse.shipDestroyed) {
+                this.statusText = "Gegnerisches Schiff zerstört! Schiessen Sie erneut.";
+            } else {
+                this.statusText = "Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.";
+            }
+            startMyTurn();
+        } else {
+            this.statusText = "Schuss ins Wasser. Warten sie auf den Zug des Gegners.";
+            endMyTurn();
+        }
+    }
+
+    /**
+     * Verarbeitet denn Schuss eines Gegners auf das eigene Feld.
+     *
+     * @param hitRequest Der Schuss des Gegners.
+     */
+    @Override
+    public void onHitRequestReceived(HitRequest hitRequest) {
+        HitResponse hitResponse;
+        myPlayfield.shootAt(hitRequest.x, hitRequest.y);
+        Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
+
+        if (possibleShip == null) {
+            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
+            this.statusText = "Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.";
+            startMyTurn();
+        } else {
+            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
+            if (hasLost()) {
+                this.statusText = "Verlorern! Alle Ihre Schiffe wurden zerstört.";
+            } else if (possibleShip.isDestroyed()) {
+                this.statusText = "Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.";
+            } else {
+                this.statusText = "Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.";
+            }
+            endMyTurn();
+        }
+        myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
     }
 }

@@ -3,19 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package battleship.network;
+package battleship;
+
+import battleship.network.HitRequest;
 
 /**
  *
- * @author Maï
+ * @author admin
  */
-public class PlayDiscover {
+public interface IHitRequestReceived {
     
-    private final boolean isBroadcast;
-
-    public PlayDiscover()
-    {
-        this.isBroadcast = true;
-    }
-     
+        void onHitRequestReceived(HitRequest hitRequest);
 }

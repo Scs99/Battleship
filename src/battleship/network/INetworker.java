@@ -5,22 +5,16 @@
  */
 package battleship.network;
 
-import java.io.Serializable;
+import battleship.IHitRequestReceived;
+import battleship.IHitResponseReceived;
 
 /**
  *
- * @author Maï
+ * @author admin
  */
-public class HitRequest implements Serializable{
+public interface INetworker {
     
-    public final int x;
-    public final int y;
-
-    public HitRequest(int x, int y)
-    {
-        this.x = x;
-        this.y = y;
-    }
-    
+    void registerHitResponse(IHitResponseReceived receiver);
+    void registerHitRequest(IHitRequestReceived receiver);
     
 }
