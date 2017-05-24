@@ -5,6 +5,7 @@
  */
 package battleship;
 
+import battleship.network.Networker;
 import battleship.network.Participant;
 import org.junit.After;
 import static org.junit.Assert.assertFalse;
@@ -18,7 +19,6 @@ import org.junit.Test;
  */
 public class ShipPlacementTest {
 
-    private Participant participant;
     private Game game;
 
     public ShipPlacementTest() {
@@ -26,14 +26,7 @@ public class ShipPlacementTest {
 
     @Before
     public void setUp() {
-        participant = new Participant("192.0.0.1", "Participant");
-        game = new Game(participant);
-    }
-
-    @After
-    public void tearDown() {
-        participant = null;
-        game = null;
+        game = new Game(new TestNetworker("Testplayer"));
     }
 
     /**

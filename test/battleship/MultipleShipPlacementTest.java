@@ -5,6 +5,7 @@
  */
 package battleship;
 
+import battleship.network.Networker;
 import battleship.network.Participant;
 import org.junit.After;
 import org.junit.Before;
@@ -17,7 +18,6 @@ import static org.junit.Assert.*;
  */
 public class MultipleShipPlacementTest {
 
-    private Participant participant;
     private Game game;
 
     public MultipleShipPlacementTest() {
@@ -25,14 +25,7 @@ public class MultipleShipPlacementTest {
 
     @Before
     public void setUp() {
-        participant = new Participant("192.0.0.1", "Participant");
-        game = new Game(participant);
-    }
-
-    @After
-    public void tearDown() {
-        participant = null;
-        game = null;
+        game = new Game(new TestNetworker("Testplayer"));
     }
 
     /**
@@ -112,13 +105,13 @@ public class MultipleShipPlacementTest {
         assertFalse("Placing 3,6", game.placeShip(game.ships.get(4), 3, 6));
         assertFalse("Placing 5,3", game.placeShip(game.ships.get(4), 5, 3));
         assertFalse("Placing 5,6", game.placeShip(game.ships.get(4), 5, 6));
-        
+
         // Assert invalid placements have not changed the playfield
         assertTrue("Check for water 3,3", game.myPlayfield.getFieldFromCoordinate(3, 3).getState() == FieldState.WATER);
         assertTrue("Check for water 3,6", game.myPlayfield.getFieldFromCoordinate(3, 6).getState() == FieldState.WATER);
         assertTrue("Check for water 5,3", game.myPlayfield.getFieldFromCoordinate(5, 3).getState() == FieldState.WATER);
         assertTrue("Check for water 5,6", game.myPlayfield.getFieldFromCoordinate(5, 6).getState() == FieldState.WATER);
-        
+
         game.myPlayfield.Print();
     }
 }

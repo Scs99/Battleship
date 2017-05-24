@@ -2,6 +2,7 @@ package battleship;
 
 import battleship.network.HitRequest;
 import battleship.network.HitResponse;
+import battleship.network.INetworker;
 import battleship.network.NetworkPackage;
 import battleship.network.Networker;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
  */
 public class Game implements IHitResponseReceived, IHitRequestReceived {
 
-    private final Networker myNetworker;
+    private final INetworker myNetworker;
     private boolean myTurn;
     private String statusText;
 
@@ -70,7 +71,7 @@ public class Game implements IHitResponseReceived, IHitRequestReceived {
      *
      * @param networker Der Networker welcher zu diesem Spiel gehört.
      */
-    public Game(final Networker networker) {
+    public Game(final INetworker networker) {
 
         this.myNetworker = networker;
 

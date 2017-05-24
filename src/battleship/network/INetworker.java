@@ -16,5 +16,6 @@ public interface INetworker {
     
     void registerHitResponse(IHitResponseReceived receiver);
     void registerHitRequest(IHitRequestReceived receiver);
+    void send(NetworkPackage netPackage);
     
 }

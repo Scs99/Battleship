@@ -5,6 +5,7 @@
  */
 package battleship;
 
+import battleship.network.Networker;
 import battleship.network.Participant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,6 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class ShipPositionPlacementTest {
 
-    private Participant participant;
     private Game game;
     private ArrayList<Field> shipLocation;
     private boolean expectedResult;
@@ -54,8 +54,7 @@ public class ShipPositionPlacementTest {
             {new ArrayList<>(Arrays.asList(new Field(0, 9), new Field(0, 8), new Field(0, 7), new Field(0, 6))), 0, true, "Bottom left vertical, upwards placement"},
             {new ArrayList<>(Arrays.asList(new Field(9, 9), new Field(8, 9), new Field(7, 9), new Field(6, 9))), 0, true, "Bottom right horizontal, right to left placement"},
             {new ArrayList<>(Arrays.asList(new Field(9, 9), new Field(9, 8), new Field(9, 7), new Field(9, 6))), 0, true, "Bottom right vertical, upwards placement"},
-            
-            {new ArrayList<>(Arrays.asList(new Field(4, 4), new Field(5, 4))), 4, true, "Middle horizontal, left to right placement"},         
+            {new ArrayList<>(Arrays.asList(new Field(4, 4), new Field(5, 4))), 4, true, "Middle horizontal, left to right placement"},
             {new ArrayList<>(Arrays.asList(new Field(0, 0), new Field(1, 0))), 4, true, "Top left horizontal, left to right placement"},
             {new ArrayList<>(Arrays.asList(new Field(0, 0), new Field(0, 1))), 4, true, "Top left vertical, downwards placement"},
             {new ArrayList<>(Arrays.asList(new Field(9, 0), new Field(8, 0))), 4, true, "Top right horizontal, right to left placement"},
@@ -64,20 +63,12 @@ public class ShipPositionPlacementTest {
             {new ArrayList<>(Arrays.asList(new Field(0, 9), new Field(1, 9))), 4, true, "Bottom left horizontal, left to right placement"},
             {new ArrayList<>(Arrays.asList(new Field(0, 9), new Field(0, 8))), 4, true, "Bottom left vertical, upwards placement"},
             {new ArrayList<>(Arrays.asList(new Field(9, 9), new Field(8, 9))), 4, true, "Bottom right horizontal, right to left placement"},
-            {new ArrayList<>(Arrays.asList(new Field(9, 9), new Field(9, 8))), 4, true, "Bottom right vertical, upwards placement"},
-        });
+            {new ArrayList<>(Arrays.asList(new Field(9, 9), new Field(9, 8))), 4, true, "Bottom right vertical, upwards placement"},});
     }
 
     @Before
     public void setUp() {
-        participant = new Participant("192.0.0.1", "Participant");
-        game = new Game(participant);
-    }
-
-    @After
-    public void tearDown() {
-        participant = null;
-        game = null;
+        game = new Game(new TestNetworker("Testplayer"));
     }
 
     /**
