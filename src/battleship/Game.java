@@ -1,26 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package battleship;
 
 import battleship.network.HitRequest;
 import battleship.network.HitResponse;
 import battleship.network.NetworkPackage;
 import battleship.network.Networker;
-import battleship.network.Participant;
 import java.util.ArrayList;
 
 /**
  * Game
- *
+ * Dei Spiellogik des Spiels Battleship.
  * @author Louis Rast
  */
 public class Game implements IHitResponseReceived, IHitRequestReceived {
 
     private final Networker myNetworker;
-    
+    private boolean myTurn;
+    private String statusText;
+
     /**
      * Das eigene Spielfeld, beeinhaltet die eigenen Schiffe.
      */
@@ -36,9 +32,6 @@ public class Game implements IHitResponseReceived, IHitRequestReceived {
      * Die eigenen Schiffe.
      */
     public final ArrayList<Ship> ships;
-
-    private boolean myTurn;
-    private String statusText;
 
     /**
      * Gibt den aktuellen Status des Spiels als Stirng zurück.
@@ -75,12 +68,12 @@ public class Game implements IHitResponseReceived, IHitRequestReceived {
     /**
      * Das eigentliche Spiel.
      *
-     * @param networker
+     * @param networker Der Networker welcher zu diesem Spiel gehört.
      */
     public Game(final Networker networker) {
-        
+
         this.myNetworker = networker;
-        
+
         this.myPlayfield = new Playfield(10);
         this.opponentPlayfield = new Playfield(10);
         this.ships = new ArrayList<>(0);
@@ -92,11 +85,9 @@ public class Game implements IHitResponseReceived, IHitRequestReceived {
         this.myTurn = false;
         this.statusText = "Willkommen zum Spiel Battleship.";
 
+        // Registrieren auf die Events des Networker wenn er HitReceived oder HitResponse Packete empfängt.
         this.myNetworker.registerHitRequest(this);
         this.myNetworker.registerHitResponse(this);
-        
-        //this.opponent.registerHitRequest(this); //ÜBERGEBEN UNSERE INSTANZ: wENN HIT REQUEST KOMMT rufe auf dieser instanz (this) methode auf.
-        //this.opponent.registerHitResponse(this);
     }
 
     /**
@@ -216,7 +207,7 @@ public class Game implements IHitResponseReceived, IHitRequestReceived {
     public HitRequest shootAtOpponent(final int x, final int y) {
         opponentPlayfield.shootAt(x, y);
         HitRequest hitRequest = new HitRequest(x, y);
-        this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";  
+        this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";
         myNetworker.send(new NetworkPackage(hitRequest, "HitRequest"));
         return hitRequest;
     }
