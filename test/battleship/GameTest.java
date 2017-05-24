@@ -39,8 +39,8 @@ public class GameTest {
     @Test
     public void test() throws IOException, InterruptedException {
 
-        networker1 = new Networker();
-        networker2 = new Networker();
+        networker1 = new Networker("Player1");
+        networker2 = new Networker("Player2");
 
         networker1.startServer(60010);
         networker2.connect("localhost", 60010);
@@ -50,12 +50,16 @@ public class GameTest {
 
         Game player1 = new Game(networker1);
         Game player2 = new Game(networker2);
-        
+
+        TimeUnit.MILLISECONDS.sleep(500);
         player1.shootAtOpponent(3, 3);
-        player2.shootAtOpponent(0, 0);
+        TimeUnit.MILLISECONDS.sleep(200);
+        player2.shootAtOpponent(2, 2);
+        TimeUnit.MILLISECONDS.sleep(200);
+        player1.shootAtOpponent(8, 8);
         
-        TimeUnit.SECONDS.sleep(2);
-        
+        TimeUnit.SECONDS.sleep(1);
+
         System.out.println("Player 1");
         player1.opponentPlayfield.Print();
         System.out.println("");
@@ -66,8 +70,7 @@ public class GameTest {
         System.out.println("");
         player2.myPlayfield.Print();
         System.out.println("");
-        
-        
+
         /*
         TimeUnit.SECONDS.sleep(1);
 
@@ -82,8 +85,7 @@ public class GameTest {
         TimeUnit.SECONDS.sleep(1);
 
         //networker1.instance.send("Testnachricht3 von networker1 zu networker2");
-*/
-
+         */
         networker1 = null;
         networker2 = null;
 

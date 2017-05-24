@@ -29,27 +29,26 @@ public class Networker implements INetworker {
 
     private final ArrayList<IHitResponseReceived> hitResponseReceivedListeners = new ArrayList<>();
     private final ArrayList<IHitRequestReceived> hitRequestReceivedListeners = new ArrayList<>();
-    //public static Networker instance;
-    private boolean isServer;
-    private int port;
-    private String host;
 
     private Socket socket;
-    //private BufferedWriter writer;
     private ObjectOutputStream writer;
 
-    public Networker() {
+    public final String myName;
+
+    public Networker(String myName) {
+        this.myName = myName;
     }
 
-    /*
-    public static void initialize() {
-        instance = new Networker();
-    }
-     */
     public boolean askPlayerToJoin(String ipAddress, String hostname) {
         return true;     // vorläufig zum compilieren
     }
 
+    /**
+     * Verbindet sich als Client mit einem Server.
+     *
+     * @param ip Die IP-Adresse des Servers.
+     * @param port Der Port des Servers.
+     */
     public void connect(String ip, int port) {
         try {
             socket = new Socket(ip, port);
@@ -63,26 +62,17 @@ public class Networker implements INetworker {
         }
     }
 
-    /*
-    public void send(String message) {
-        try {
-            String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-            System.out.println(timeStamp + " Client: " + message);
-            writer.write(message);
-            writer.newLine();
-            writer.flush();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    /**
+     * Versendet ein Netzwerkpaket zum Gegenspieler.
+     *
+     * @param netPackage Das zu versendende Packet.
      */
     public void send(NetworkPackage netPackage) {
         try {
             String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-            System.out.println(timeStamp + " Client: " + netPackage.toString());
             writer.writeObject(netPackage);
+            writer.flush();
+            System.out.println(timeStamp + " " + myName + " Client: Sending " + netPackage.typeOfObject);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -90,75 +80,58 @@ public class Networker implements INetworker {
         }
     }
 
+    /**
+     * Erstellt einen neuen Server der einkommende Packete empfängt.
+     *
+     * @param port der Port des Servers.
+     */
     public void startServer(int port) {
-        (new Thread() {
+
+        // Thread als anonyme innere Klasse.
+        Thread t = new Thread() {
+            private Socket s;
+            private ObjectInputStream in;
+
             @Override
             public void run() {
-                ServerSocket ss;
                 try {
-                    ss = new ServerSocket(port);
+                    ServerSocket ss = new ServerSocket(port);
+                    s = ss.accept();
+                    in = new ObjectInputStream(s.getInputStream());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    Socket s = ss.accept();
-
-                    //BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                    ObjectInputStream in = new ObjectInputStream(s.getInputStream());
+                while (true) {
                     try {
                         Object object = (NetworkPackage) in.readObject();
                         NetworkPackage netPackage = (NetworkPackage) object;
                         String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-                        System.out.println(timeStamp + " Server: " + netPackage.toString());
-                        System.out.println(timeStamp + " Server: " + netPackage.typeOfObject);
+                        //System.out.println(timeStamp + " " + myName + " Server: " + netPackage.toString());
+                        //System.out.println(timeStamp + " " + myName + " Server: " + netPackage.typeOfObject);
 
                         if ("HitRequest".equals(netPackage.typeOfObject)) {
                             HitRequest hitRequest = (HitRequest) netPackage.object;
-                            System.out.println(timeStamp + " Server: I received a HitRequest @ " + hitRequest.x + " " + hitRequest.y);
+                            System.out.println(timeStamp + " " + myName + " Server: I received a HitRequest @ " + hitRequest.x + " " + hitRequest.y);
                             receivedHitRequest(hitRequest);
 
                         } else if ("HitResponse".equals(netPackage.typeOfObject)) {
                             HitResponse hitResponse = (HitResponse) netPackage.object;
-                            System.out.println(timeStamp + " Server: I received a HitResponse @ " + hitResponse.x + " " + hitResponse.y);
+                            System.out.println(timeStamp + " " + myName + " Server: I received a HitResponse @ " + hitResponse.x + " " + hitResponse.y);
                             receivedHitResponse(hitResponse);
                         }
 
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
-        }).start();
+        };
+        t.start();
     }
 
-    private void checkObjectType(NetworkPackage netPackage) {
-        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-    }
-
-    /*  
-    public void startServer(int port) {
-        (new Thread() {
-            @Override
-            public void run() {
-                ServerSocket ss;
-                try {
-                    ss = new ServerSocket(port);
-
-                    Socket s = ss.accept();
-
-                    BufferedReader in = new BufferedReader(
-                            new InputStreamReader(s.getInputStream()));
-                    String line = null;
-                    while ((line = in.readLine()) != null) {
-                        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-                        System.out.println(timeStamp + " Server: " + line);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-     */
     @Override
     public void registerHitResponse(IHitResponseReceived receiver) {
         hitResponseReceivedListeners.add(receiver);
