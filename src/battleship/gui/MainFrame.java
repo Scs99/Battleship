@@ -11,6 +11,7 @@ import battleship.network.Networker;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +31,8 @@ public class MainFrame extends JFrame implements ActionListener{
   
     private final JPanel playerField = new JPanel();
     private final JPanel opponendField = new JPanel();
+    private JLabel labelOppenent = new JLabel("Gegner");
+    private JLabel labelMyPlayfield = new JLabel("Mein Spielfeld");
     private final JLabel label = new JLabel("text for placing ships");
     private int board[][] = new int[10][10];
     private JButton playerButton[][] = new JButton[10][10];
@@ -41,18 +44,25 @@ public class MainFrame extends JFrame implements ActionListener{
         super("playField");
         game = new Game(networkplayer);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(1200, 800);
+        setSize(1000, 800);
         setLayout(new BorderLayout());
         setResizable(false);
         playerField.setLayout(new GridLayout(10, 10));
         opponendField.setLayout(new GridLayout(10, 10));
+        
+        labelMyPlayfield.setSize(500, 200);
+        labelMyPlayfield.setFont(new Font("Arial", Font.BOLD, 36));
+        labelOppenent.setLocation(500, 500);
+        labelOppenent.setFont(new Font("Arial", Font.BOLD, 36));
+        
 
-       
+        add(labelMyPlayfield, BorderLayout.WEST);
         add(playerField, BorderLayout.WEST);
+        add(labelOppenent, BorderLayout.EAST);
         add(opponendField, BorderLayout.EAST);
         add(label, BorderLayout.SOUTH);
 
-        playerField.setBorder(BorderFactory.createEmptyBorder(200, 20, 80, 100));
+        playerField.setBorder(BorderFactory.createEmptyBorder(200, 20, 80, 0));
         opponendField.setBorder(BorderFactory.createEmptyBorder(200, 0, 80, 20));
         label.setBorder(BorderFactory.createEmptyBorder(0, 120, 120, 0));
 
@@ -66,8 +76,8 @@ public class MainFrame extends JFrame implements ActionListener{
                 playerField.add(playerButton[y][x]);
                 opponendField.add(opponendButton[y][x]);
 
-                playerButton[y][x].addActionListener(new ButtonPressed(y, x));
-                //opponendButton[y][x].addActionListener(new ButtonPressed(y,x));
+                playerButton[y][x].addActionListener(new ButtonMyPlayfield(y, x));
+                opponendButton[y][x].addActionListener(new ButtonOppenent(y,x));
 
                 playerButton[y][x].setPreferredSize(new Dimension(40, 40));
                 opponendButton[y][x].setPreferredSize(new Dimension(40, 40));
@@ -121,22 +131,41 @@ public class MainFrame extends JFrame implements ActionListener{
                 }
             }
         }
+     
+        label.setText(game.getStatusText());
+        
     }
-
+     
   
 
-    private class ButtonPressed implements ActionListener {
+    private class ButtonMyPlayfield implements ActionListener {
 
         int x;
         int y;
 
-        public ButtonPressed(int row, int column) {
+        public ButtonMyPlayfield(int row, int column) {
             y = row;
             x = column;
         }
 
         public void actionPerformed(ActionEvent evt) {
-           game.shootAtOpponent(x, y);
+           //
+        }
+
+    }
+    
+    private class ButtonOppenent implements ActionListener {
+
+        int x;
+        int y;
+
+        public ButtonOppenent(int row, int column) {
+            y = row;
+            x = column;
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+           //
         }
 
     }
