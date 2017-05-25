@@ -78,16 +78,16 @@ public class StartFrame extends JFrame {
     }
 
     public void pcPlayerOnButtonPressed() {
-        Networker networkplayer = new Networker("");
-        MainFrame frame = new MainFrame(networkplayer);
+        Networker networkplayer = new Networker("Player");
+        MainFrame frame = new MainFrame(networkplayer, true);
         frame.setVisible(true);
         this.setVisible(false);
 
     }
 
     public void networkPlayerOnButtonPressed() {
-        Networker networkplayer = new Networker("");
-        MainFrame frame = new MainFrame(networkplayer);
+        Networker networkplayer = new Networker("Player");
+        MainFrame frame = new MainFrame(networkplayer, false);
         frame.setVisible(true);
         this.setVisible(false);
 

@@ -15,7 +15,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
     private final ArrayList<IGameChanged> gameChangedListeners = new ArrayList<>();
 
-    private final INetworker myNetworker;
+    public final INetworker myNetworker;
     private boolean myTurn;
     private String statusText;
     private GameState gameState;
@@ -51,6 +51,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
     public void startMyTurn() {
         myTurn = true;
         gameState = GameState.IS_MYTURN;
+        gameChanged();
     }
 
     /**
@@ -59,6 +60,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
     public void endMyTurn() {
         myTurn = false;
         gameState = GameState.IS_NOT_MYTURN;
+        gameChanged();
     }
 
     /**
@@ -96,24 +98,36 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         this.gameState = GameState.IS_PLACING;
 
     }
-    
-    public void initialize(){
-         gameChanged();
+
+    public void initialize() {
+        gameChanged();
     }
 
-    
-    public void placeShip(final int x, final int y){        
-        for(Ship ship : ships){           
-            if(!ship.isCompleted()){
+    public void placeShip(final int x, final int y) {
+        for (Ship ship : ships) {
+            if (!ship.isCompleted()) {
                 placeShipPart(ship, x, y);
+
+                if (areAllShipsPlaced()) {
+                    gameState = GameState.IS_MYTURN;
+                    gameChanged();
+                }
                 return;
-            }           
-        } 
+            }
+        }
         gameState = GameState.IS_MYTURN;
+        gameChanged();
     }
-    
-    
-    
+
+    private boolean areAllShipsPlaced() {
+        for (Ship ship : ships) {
+            if (!ship.isCompleted()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Lässt auf dem Spielfeld ein Schiffteil platzieren.
      *
@@ -239,6 +253,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
      * @param y Die Y-Koordinate an welcher der Schuss erfolgen soll.
      */
     public HitRequest shootAtOpponent(final int x, final int y) {
+        endMyTurn();
         opponentPlayfield.shootAt(x, y);
         HitRequest hitRequest = new HitRequest(x, y);
         this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";
@@ -247,7 +262,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         return hitRequest;
     }
 
-    private Ship getShipOfField(final Field myField) {
+    public Ship getShipOfField(final Field myField) {
         for (Ship ship : ships) {
             if (ship.fields.contains(myField)) {
                 return ship;
@@ -262,7 +277,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         this.statusText = "Sie haben " + ship.nrOfPlacedParts() + "/" + ship.size + " Schiffteilen platziert.";
     }
 
-    private boolean hasLost() {
+    public boolean hasLost() {
         for (Ship ship : ships) {
             if (!ship.isDestroyed()) {
                 return false;
@@ -271,7 +286,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         return true;
     }
 
-    private boolean hasWon() {
+    public boolean hasWon() {
         int nrOfShipParts = 0;
         int nrOfDestroyedShipParts = 0;
         for (Ship ship : ships) {
@@ -286,6 +301,10 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             return true;
         }
         return false;
+    }
+
+    private void setStatusText(String statusText, boolean isError) {
+        this.statusText = statusText;
     }
 
     /**

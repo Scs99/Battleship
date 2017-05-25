@@ -5,6 +5,7 @@
  */
 package battleship.gui;
 
+import battleship.ComputerGame;
 import battleship.Field;
 import battleship.Game;
 import battleship.GameState;
@@ -29,9 +30,13 @@ import javax.swing.WindowConstants;
  *
  * @author Daniel Ouwehand
  */
-public class MainFrame extends JFrame implements IGameChanged, ActionListener{
+public class MainFrame extends JFrame implements IGameChanged, ActionListener {
 
-  
+    private static final Color COLOR_WATER = new Color(50, 186, 255);
+    private static final Color COLOR_SHIP = new Color(64, 64, 64);
+    private static final Color COLOR_WATER_HIT = new Color(214, 127, 255);
+    private static final Color COLOR_SHIP_HIT = new Color(255, 0, 0);
+
     private final JPanel playerField = new JPanel();
     private final JPanel opponendField = new JPanel();
     private JLabel labelOppenent = new JLabel("Gegner");
@@ -41,25 +46,35 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener{
     private JButton playerButton[][] = new JButton[10][10];
     private JButton opponendButton[][] = new JButton[10][10];
     private Game game;
+    private ComputerGame computerGame;
 
-    public MainFrame(Networker networkplayer) {
+    public MainFrame(Networker networkplayer, boolean versusComputer) {
 
         super("playField");
         game = new Game(networkplayer);
         game.registerGameChanged(this);
-        
+
+        if (versusComputer) {
+            Networker computerNetworker = new Networker("ComputerPlayer");
+            computerGame = new ComputerGame(computerNetworker);
+
+            networkplayer.startServer(60010);
+            computerNetworker.connect("localhost", 60010);
+            computerNetworker.startServer(60011);
+            networkplayer.connect("localhost", 60011);
+        }
+
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1000, 800);
         setLayout(new BorderLayout());
         setResizable(false);
         playerField.setLayout(new GridLayout(10, 10));
         opponendField.setLayout(new GridLayout(10, 10));
-        
+
         labelMyPlayfield.setSize(500, 200);
         labelMyPlayfield.setFont(new Font("Arial", Font.BOLD, 36));
         labelOppenent.setLocation(500, 500);
         labelOppenent.setFont(new Font("Arial", Font.BOLD, 36));
-        
 
         add(labelMyPlayfield, BorderLayout.WEST);
         add(playerField, BorderLayout.WEST);
@@ -71,7 +86,6 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener{
         opponendField.setBorder(BorderFactory.createEmptyBorder(200, 0, 80, 20));
         label.setBorder(BorderFactory.createEmptyBorder(0, 120, 120, 0));
 
-
         for (int y = 0; y < 10; ++y) {
             for (int x = 0; x < 10; ++x) {
 
@@ -82,7 +96,7 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener{
                 opponendField.add(opponendButton[y][x]);
 
                 playerButton[y][x].addActionListener(new ButtonMyPlayfield(y, x));
-                opponendButton[y][x].addActionListener(new ButtonOppenent(y,x));
+                opponendButton[y][x].addActionListener(new ButtonOppenent(y, x));
 
                 playerButton[y][x].setPreferredSize(new Dimension(40, 40));
                 opponendButton[y][x].setPreferredSize(new Dimension(40, 40));
@@ -96,63 +110,83 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener{
 
     }
 
+    private void enablePlayerButtons(boolean setEnabled) {
+        for (int y = 0; y < 10; ++y) {
+            for (int x = 0; x < 10; ++x) {
+                playerButton[y][x].setEnabled(setEnabled);
+            }
+        }
+    }
+
+    private void enableOpponentButtons(boolean setEnabled) {
+        for (int y = 0; y < 10; ++y) {
+            for (int x = 0; x < 10; ++x) {
+                opponendButton[y][x].setEnabled(setEnabled);
+            }
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        
     }
 
     @Override
     public void onGameChanged(Playfield myPlayfield, Playfield opponentPlayfield, String statusText, boolean isErrorText, GameState gameState) {
-                for(int x = 0; x < 10; x++){
-            for(int y = 0; y < 10; y++){
-                Field field = myPlayfield.fields[y*10+x];
-                switch (field.getState()) {
-                    case WATER:
-                        playerButton[y][x].setBackground(Color.BLUE);
-                        break;
-                    case WATER_HIT:
-                        playerButton[y][x].setBackground(Color.PINK);
-                        break;
-                    case SHIP:
-                        playerButton[y][x].setBackground(Color.LIGHT_GRAY);
-                        break;
-                    default:
-                        playerButton[y][x].setBackground(Color.RED);
-                        break;
-                }
-            }
+
+        switch (gameState) {
+            case IS_PLACING:
+                enablePlayerButtons(true);
+                enableOpponentButtons(false);
+                break;
+            case IS_MYTURN:
+                enablePlayerButtons(false);
+                enableOpponentButtons(true);
+                break;
+            case IS_NOT_MYTURN:
+                enablePlayerButtons(false);
+                enableOpponentButtons(false);
+                break;
+            case IS_OVER:
+                enablePlayerButtons(false);
+                enableOpponentButtons(false);
+                break;
         }
-        
-        for(int x = 0; x < 10; x++){
-            for(int y = 0; y < 10; y++){
-                Field field = opponentPlayfield.fields[y*10+x];
-                switch (field.getState()) {
-                    case WATER:
-                        opponendButton[y][x].setBackground(Color.BLUE);
-                        break;
-                    case WATER_HIT:
-                        opponendButton[y][x].setBackground(Color.PINK);
-                        break;
-                    case SHIP:
-                        opponendButton[y][x].setBackground(Color.LIGHT_GRAY);
-                        break;
-                    default:
-                        opponendButton[y][x].setBackground(Color.RED);
-                        break;
-                }
-            }
-        }
-     
-        if(isErrorText){
-           
-        } else{
-            
+
+        paintPlayfield(myPlayfield, playerButton);
+        paintPlayfield(opponentPlayfield, opponendButton);
+
+        if (isErrorText) {
+
+        } else {
+
         }
         label.setText(statusText);
     }
-     
-  
+
+    private void paintPlayfield(Playfield playfield, JButton[][] buttonsToPaint) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                Field field = playfield.fields[y * 10 + x];
+                switch (field.getState()) {
+                    case WATER:
+                        buttonsToPaint[y][x].setBackground(COLOR_WATER);
+                        break;
+                    case WATER_HIT:
+                        buttonsToPaint[y][x].setBackground(COLOR_WATER_HIT);
+                        break;
+                    case SHIP:
+                        buttonsToPaint[y][x].setBackground(COLOR_SHIP);
+                        break;
+                    case SHIP_HIT:
+                        buttonsToPaint[y][x].setBackground(COLOR_SHIP_HIT);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
 
     private class ButtonMyPlayfield implements ActionListener {
 
@@ -165,11 +199,11 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener{
         }
 
         public void actionPerformed(ActionEvent evt) {
-           game.placeShip(x, y);
+            game.placeShip(x, y);
         }
 
     }
-    
+
     private class ButtonOppenent implements ActionListener {
 
         int x;
@@ -181,7 +215,7 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener{
         }
 
         public void actionPerformed(ActionEvent evt) {
-           //game.shootAtOpponent(x, y);
+            game.shootAtOpponent(x, y);
         }
 
     }
