@@ -350,7 +350,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
     public void gameChanged() {
         for (IGameChanged receiver : gameChangedListeners) {
-            receiver.onGameChanged(this.myPlayfield, this.opponentPlayfield, this.statusText, this.gameState);
+            receiver.onGameChanged(this.myPlayfield, this.opponentPlayfield, this.statusText, false, this.gameState);
         }
     }
 }
