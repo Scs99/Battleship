@@ -4,7 +4,6 @@ import battleship.network.HitRequest;
 import battleship.network.HitResponse;
 import battleship.network.INetworker;
 import battleship.network.NetworkPackage;
-import battleship.network.Networker;
 import java.util.ArrayList;
 
 /**
@@ -12,8 +11,10 @@ import java.util.ArrayList;
  * Dei Spiellogik des Spiels Battleship.
  * @author Louis Rast
  */
-public class Game implements IHitResponseReceived, IHitRequestReceived {
+public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
+    private final ArrayList<IGameChanged> gameChangedListeners = new ArrayList<>();
+    
     private final INetworker myNetworker;
     private boolean myTurn;
     private String statusText;
@@ -305,5 +306,10 @@ public class Game implements IHitResponseReceived, IHitRequestReceived {
             endMyTurn();
         }
         myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+    }
+
+    @Override
+    public void registerGameChanged(IGameChanged receiver) {
+        gameChangedListeners.add(receiver);
     }
 }
