@@ -7,17 +7,18 @@ import battleship.network.NetworkPackage;
 import java.util.ArrayList;
 
 /**
- * Game
- * Dei Spiellogik des Spiels Battleship.
+ * Game Dei Spiellogik des Spiels Battleship.
+ *
  * @author Louis Rast
  */
 public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
     private final ArrayList<IGameChanged> gameChangedListeners = new ArrayList<>();
-    
+
     private final INetworker myNetworker;
     private boolean myTurn;
     private String statusText;
+    private GameState gameState;
 
     /**
      * Das eigene Spielfeld, beeinhaltet die eigenen Schiffe.
@@ -49,6 +50,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
      */
     public void startMyTurn() {
         myTurn = true;
+        gameState = GameState.IS_MYTURN;
     }
 
     /**
@@ -56,6 +58,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
      */
     public void endMyTurn() {
         myTurn = false;
+        gameState = GameState.IS_NOT_MYTURN;
     }
 
     /**
@@ -90,8 +93,27 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         // Registrieren auf die Events des Networker wenn er HitReceived oder HitResponse Packete empfängt.
         this.myNetworker.registerHitRequest(this);
         this.myNetworker.registerHitResponse(this);
+        this.gameState = GameState.IS_PLACING;
+
+    }
+    
+    public void initialize(){
+         gameChanged();
     }
 
+    
+    public void placeShip(final int x, final int y){        
+        for(Ship ship : ships){           
+            if(!ship.isCompleted()){
+                placeShipPart(ship, x, y);
+                return;
+            }           
+        } 
+        gameState = GameState.IS_MYTURN;
+    }
+    
+    
+    
     /**
      * Lässt auf dem Spielfeld ein Schiffteil platzieren.
      *
@@ -103,9 +125,10 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
      * soll.
      * @return TRUE falls platzieren erfolgtreich war, FALSE wenn nicht.
      */
-    public boolean placeShip(final Ship shipToPlace, final int x, final int y) {
+    public boolean placeShipPart(final Ship shipToPlace, final int x, final int y) {
         if (shipToPlace.isCompleted()) {
             this.statusText = "Das ausgewählte Schiff wurde bereits platziert.";
+            gameChanged();
             return false;
         }
         // Erstes Element darf nicht neben existierenden Schiffen platziert werden
@@ -114,10 +137,12 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             for (Field field : surrounding) {
                 if (field.getState() == FieldState.SHIP) {
                     this.statusText = "Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.";
+                    gameChanged();
                     return false;
                 }
             }
             addAndMarkShipPart(shipToPlace, myPlayfield.getFieldFromCoordinate(x, y));
+            gameChanged();
             return true;
         }
         // Zweites Element darf nicht neben exisiterenden Schiffen platziert werden
@@ -127,6 +152,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             ArrayList<Field> validNeighbours = myPlayfield.getValideNeighbours(shipToPlace.fields.get(0).x, shipToPlace.fields.get(0).y);
             if (!validNeighbours.contains(toBePlaced)) {
                 this.statusText = "Der zweite Schiffteil muss an den ersten angrenzen. Versuchen Sie ein anderes Feld.";
+                gameChanged();
                 return false;
             }
 
@@ -136,6 +162,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
                         ArrayList<Field> surrounding = myPlayfield.getSurrounding(shipField.x, shipField.y);
                         if (surrounding.contains(toBePlaced)) {
                             this.statusText = "Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.";
+                            gameChanged();
                             return false;
                         }
                     }
@@ -143,6 +170,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             }
 
             addAndMarkShipPart(shipToPlace, toBePlaced);
+            gameChanged();
             return true;
         }
 
@@ -154,6 +182,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
             if (toBePlaced.y != shipToPlace.fields.get(0).y) {
                 this.statusText = "Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.";
+                gameChanged();
                 return false;
             }
 
@@ -171,12 +200,14 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
             if ((toBePlaced.x == (xMax + 1)) || (toBePlaced.x == (xMin - 1))) {
                 addAndMarkShipPart(shipToPlace, toBePlaced);
+                gameChanged();
                 return true;
             }
         } else if (shipToPlace.fields.get(0).x == shipToPlace.fields.get(1).x) {
 
             if (toBePlaced.x != shipToPlace.fields.get(0).x) {
                 this.statusText = "Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.";
+                gameChanged();
                 return false;
             }
 
@@ -194,6 +225,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
 
             if ((toBePlaced.y == (yMax + 1)) || (toBePlaced.y == (yMin - 1))) {
                 addAndMarkShipPart(shipToPlace, toBePlaced);
+                gameChanged();
                 return true;
             }
         }
@@ -211,6 +243,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         HitRequest hitRequest = new HitRequest(x, y);
         this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";
         myNetworker.send(new NetworkPackage(hitRequest, "HitRequest"));
+        gameChanged();
         return hitRequest;
     }
 
@@ -277,6 +310,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             this.statusText = "Schuss ins Wasser. Warten sie auf den Zug des Gegners.";
             endMyTurn();
         }
+        gameChanged();
     }
 
     /**
@@ -306,10 +340,17 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             endMyTurn();
         }
         myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+        gameChanged();
     }
 
     @Override
     public void registerGameChanged(IGameChanged receiver) {
         gameChangedListeners.add(receiver);
+    }
+
+    public void gameChanged() {
+        for (IGameChanged receiver : gameChangedListeners) {
+            receiver.onGameChanged(this.myPlayfield, this.opponentPlayfield, this.statusText, this.gameState);
+        }
     }
 }

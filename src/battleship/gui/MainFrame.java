@@ -7,6 +7,9 @@ package battleship.gui;
 
 import battleship.Field;
 import battleship.Game;
+import battleship.GameState;
+import battleship.IGameChanged;
+import battleship.Playfield;
 import battleship.network.Networker;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,7 +29,7 @@ import javax.swing.WindowConstants;
  *
  * @author Daniel Ouwehand
  */
-public class MainFrame extends JFrame implements ActionListener{
+public class MainFrame extends JFrame implements IGameChanged, ActionListener{
 
   
     private final JPanel playerField = new JPanel();
@@ -43,6 +46,8 @@ public class MainFrame extends JFrame implements ActionListener{
 
         super("playField");
         game = new Game(networkplayer);
+        game.registerGameChanged(this);
+        
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1000, 800);
         setLayout(new BorderLayout());
@@ -86,27 +91,34 @@ public class MainFrame extends JFrame implements ActionListener{
 
         }
 
+        game.initialize();
         setVisible(true);
 
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        for(int x = 0; x < 10; x++){
+
+        
+    }
+
+    @Override
+    public void onGameChanged(Playfield myPlayfield, Playfield opponentPlayfield, String statusText, boolean isErrorText, GameState gameState) {
+                for(int x = 0; x < 10; x++){
             for(int y = 0; y < 10; y++){
-                Field field = game.myPlayfield.fields[y*10+x];
+                Field field = myPlayfield.fields[y*10+x];
                 switch (field.getState()) {
                     case WATER:
-                        playerButton[y][x].setBackground(Color.blue);
+                        playerButton[y][x].setBackground(Color.BLUE);
                         break;
                     case WATER_HIT:
-                        playerButton[y][x].setBackground(Color.black);
+                        playerButton[y][x].setBackground(Color.PINK);
                         break;
                     case SHIP:
-                        playerButton[y][x].setBackground(Color.red);
+                        playerButton[y][x].setBackground(Color.LIGHT_GRAY);
                         break;
                     default:
-                        playerButton[y][x].setBackground(Color.yellow);
+                        playerButton[y][x].setBackground(Color.RED);
                         break;
                 }
             }
@@ -114,26 +126,30 @@ public class MainFrame extends JFrame implements ActionListener{
         
         for(int x = 0; x < 10; x++){
             for(int y = 0; y < 10; y++){
-                Field field = game.opponentPlayfield.fields[y*10+x];
+                Field field = opponentPlayfield.fields[y*10+x];
                 switch (field.getState()) {
                     case WATER:
-                        opponendButton[y][x].setBackground(Color.blue);
+                        opponendButton[y][x].setBackground(Color.BLUE);
                         break;
                     case WATER_HIT:
-                        opponendButton[y][x].setBackground(Color.black);
+                        opponendButton[y][x].setBackground(Color.PINK);
                         break;
                     case SHIP:
-                        opponendButton[y][x].setBackground(Color.red);
+                        opponendButton[y][x].setBackground(Color.LIGHT_GRAY);
                         break;
                     default:
-                        opponendButton[y][x].setBackground(Color.yellow);
+                        opponendButton[y][x].setBackground(Color.RED);
                         break;
                 }
             }
         }
      
-        label.setText(game.getStatusText());
-        
+        if(isErrorText){
+           
+        } else{
+            
+        }
+        label.setText(statusText);
     }
      
   
@@ -149,7 +165,7 @@ public class MainFrame extends JFrame implements ActionListener{
         }
 
         public void actionPerformed(ActionEvent evt) {
-           //
+           game.placeShip(x, y);
         }
 
     }
@@ -165,7 +181,7 @@ public class MainFrame extends JFrame implements ActionListener{
         }
 
         public void actionPerformed(ActionEvent evt) {
-           //
+           //game.shootAtOpponent(x, y);
         }
 
     }

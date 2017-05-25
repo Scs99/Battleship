@@ -38,42 +38,42 @@ public class SimulatedGameTest {
         Game player2 = new Game(new TestNetworker("Player1"));
         
         // Player1 places ships
-        player1.placeShip(player1.ships.get(0), 2, 7);
-        player1.placeShip(player1.ships.get(0), 3, 7);
-        player1.placeShip(player1.ships.get(0), 4, 7);
-        player1.placeShip(player1.ships.get(0), 5, 7);
+        player1.placeShipPart(player1.ships.get(0), 2, 7);
+        player1.placeShipPart(player1.ships.get(0), 3, 7);
+        player1.placeShipPart(player1.ships.get(0), 4, 7);
+        player1.placeShipPart(player1.ships.get(0), 5, 7);
         
-        player1.placeShip(player1.ships.get(1), 7, 4);
-        player1.placeShip(player1.ships.get(1), 7, 5);
-        player1.placeShip(player1.ships.get(1), 7, 6);
+        player1.placeShipPart(player1.ships.get(1), 7, 4);
+        player1.placeShipPart(player1.ships.get(1), 7, 5);
+        player1.placeShipPart(player1.ships.get(1), 7, 6);
         
-        player1.placeShip(player1.ships.get(2), 1, 1);
-        player1.placeShip(player1.ships.get(2), 1, 2);
+        player1.placeShipPart(player1.ships.get(2), 1, 1);
+        player1.placeShipPart(player1.ships.get(2), 1, 2);
         
-        player1.placeShip(player1.ships.get(3), 5, 2);
-        player1.placeShip(player1.ships.get(3), 6, 2);
+        player1.placeShipPart(player1.ships.get(3), 5, 2);
+        player1.placeShipPart(player1.ships.get(3), 6, 2);
         
-        player1.placeShip(player1.ships.get(4), 8, 0);
-        player1.placeShip(player1.ships.get(4), 9, 0);
+        player1.placeShipPart(player1.ships.get(4), 8, 0);
+        player1.placeShipPart(player1.ships.get(4), 9, 0);
         
         // Player2 places ships
-        player2.placeShip(player2.ships.get(0), 3, 3);
-        player2.placeShip(player2.ships.get(0), 3, 4);
-        player2.placeShip(player2.ships.get(0), 3, 5);
-        player2.placeShip(player2.ships.get(0), 3, 6);
+        player2.placeShipPart(player2.ships.get(0), 3, 3);
+        player2.placeShipPart(player2.ships.get(0), 3, 4);
+        player2.placeShipPart(player2.ships.get(0), 3, 5);
+        player2.placeShipPart(player2.ships.get(0), 3, 6);
         
-        player2.placeShip(player2.ships.get(1), 4, 8);
-        player2.placeShip(player2.ships.get(1), 5, 8);
-        player2.placeShip(player2.ships.get(1), 6, 8);
+        player2.placeShipPart(player2.ships.get(1), 4, 8);
+        player2.placeShipPart(player2.ships.get(1), 5, 8);
+        player2.placeShipPart(player2.ships.get(1), 6, 8);
         
-        player2.placeShip(player2.ships.get(2), 1, 1);
-        player2.placeShip(player2.ships.get(2), 2, 1);
+        player2.placeShipPart(player2.ships.get(2), 1, 1);
+        player2.placeShipPart(player2.ships.get(2), 2, 1);
         
-        player2.placeShip(player2.ships.get(3), 1, 7);
-        player2.placeShip(player2.ships.get(3), 1, 8);
+        player2.placeShipPart(player2.ships.get(3), 1, 7);
+        player2.placeShipPart(player2.ships.get(3), 1, 8);
         
-        player2.placeShip(player2.ships.get(4), 9, 6);
-        player2.placeShip(player2.ships.get(4), 9, 7);
+        player2.placeShipPart(player2.ships.get(4), 9, 6);
+        player2.placeShipPart(player2.ships.get(4), 9, 7);
         
         // Player1 starts
         player1.startMyTurn();

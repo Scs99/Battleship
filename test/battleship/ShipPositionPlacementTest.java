@@ -80,7 +80,7 @@ public class ShipPositionPlacementTest {
         int counter = 0;
         for (Field field : shipLocation) {
             assertTrue(field.x + "," + field.y + " is not WATER", game.myPlayfield.getFieldFromCoordinate(field.x, field.y).getState() == FieldState.WATER);
-            game.placeShip(game.ships.get(shipNr), field.x, field.y);
+            game.placeShipPart(game.ships.get(shipNr), field.x, field.y);
             assertSame(field.x + "," + field.y + " doesn´t match SHIP field", game.myPlayfield.getFieldFromCoordinate(field.x, field.y), game.ships.get(shipNr).fields.get(counter));
             assertTrue(field.x + "," + field.y + " is not SHIP", game.myPlayfield.getFieldFromCoordinate(field.x, field.y).getState() == FieldState.SHIP);
             counter++;

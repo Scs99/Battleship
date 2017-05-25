@@ -27,7 +27,7 @@ public class ComputerGame extends Game {
                 int x = rand.nextInt(9);
                 int y = rand.nextInt(9);
                                
-                placeShip(ship, x, y);
+                placeShipPart(ship, x, y);
                 
                 if()
                 

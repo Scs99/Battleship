@@ -9,6 +9,6 @@ package battleship;
  *
  * @author admin
  */
-public interface IGameChanged {
-    void onGameChanged(Playfield myPlayfield, Playfield opponentPlayfield, String statusText, boolean isErrorText, GameState gameState);
+public enum GameState {
+    IS_CONNECTING , IS_PLACING, IS_MYTURN, IS_NOT_MYTURN, IS_OVER
 }
