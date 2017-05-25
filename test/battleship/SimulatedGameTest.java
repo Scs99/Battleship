@@ -33,13 +33,9 @@ public class SimulatedGameTest {
     
     @Test
     public void simulateFullGameTest()
-    {
-        Participant participant1 = new Participant("192.1.1.0", "Player1");
-        Participant participant2 = new Participant("192.2.2.0", "Player2");
-        
-        
-        Game player1 = new Game(participant1);
-        Game player2 = new Game(participant2);
+    {           
+        Game player1 = new Game(new TestNetworker("Player1"));
+        Game player2 = new Game(new TestNetworker("Player1"));
         
         // Player1 places ships
         player1.placeShip(player1.ships.get(0), 2, 7);

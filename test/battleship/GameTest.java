@@ -42,11 +42,13 @@ public class GameTest {
         networker1 = new Networker("Player1");
         networker2 = new Networker("Player2");
 
-        networker1.startServer(60010);
+        networker1.startServer(60010);     
         networker2.connect("localhost", 60010);
-
         networker2.startServer(60011);
         networker1.connect("localhost", 60011);
+        
+        //networker2.startServer(60011);
+        //networker1.connect("localhost", 60011);
 
         Game player1 = new Game(networker1);
         Game player2 = new Game(networker2);
