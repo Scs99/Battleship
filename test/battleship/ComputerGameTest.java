@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package battleship;
 
 import battleship.network.Networker;
@@ -11,44 +6,43 @@ import org.junit.Test;
 
 /**
  *
- * @author admin
+ * @author Louis Rast
  */
 public class ComputerGameTest {
-    
-    public ComputerGameTest(){
-        
+
+    public ComputerGameTest() {
     }
-    
+
     @Test
-    public void testPlaceAllShips(){
-        
+    public void testPlaceAllShips() {
+
         ComputerGame ComputerGame = new ComputerGame(new TestNetworker("TestPlayer"));
-        
         ComputerGame.placeAllShips();
-        
-        ComputerGame.myPlayfield.Print();      
+        System.out.println("");
+        ComputerGame.myPlayfield.Print();
+        System.out.println("");
     }
-    
+
     @Test
-    public void testVersus() throws InterruptedException{
+    public void testAutoconnect() throws InterruptedException {
         Networker networker1, networker2;
-        
-        
+
         networker1 = new Networker("Player1");
         networker2 = new Networker("Player2");
 
-        networker1.startServer();     
+        networker1.startServer();
         networker2.startServer();
         TimeUnit.MILLISECONDS.sleep(200);
         networker1.connect("localhost", networker2.getMyPort());
-        
+
         Game game = new Game(networker1);
         ComputerGame computerGame = new ComputerGame(networker2);
-        
+
         game.shootAtOpponent(0, 0);
-        
-        TimeUnit.SECONDS.sleep(2);
-        
+
+        TimeUnit.MILLISECONDS.sleep(200);
+
+        System.out.println("");
         System.out.println("Player 1");
         game.opponentPlayfield.Print();
         System.out.println("");
@@ -59,7 +53,5 @@ public class ComputerGameTest {
         System.out.println("");
         computerGame.myPlayfield.Print();
         System.out.println("");
-        
     }
-    
 }
