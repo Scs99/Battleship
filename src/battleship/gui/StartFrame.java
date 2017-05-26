@@ -5,6 +5,8 @@
  */
 package battleship.gui;
 
+import battleship.IGameCanStart;
+import battleship.network.IGui;
 import battleship.network.Networker;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,7 +31,7 @@ import javax.swing.WindowConstants;
  *
  * @author Daniel Ouwehand
  */
-public class StartFrame extends JFrame {
+public class StartFrame extends JFrame implements IGameCanStart{
 
     private final JTextField display = new JTextField();
     private final JLabel ipaddress = new JLabel();
@@ -88,10 +91,12 @@ public class StartFrame extends JFrame {
         });
 
         networker = new Networker("Player");
+        networker.registerGameCanStart(this);
         networker.startServer();
 
         try {
-            ipaddress.setText(InetAddress.getLocalHost() + " Port: 1540");
+            TimeUnit.MILLISECONDS.sleep(200);
+            ipaddress.setText(networker.getMyIP() + ":" + networker.getMyPort());
         } catch (Exception e) {
             System.out.println("Fehler bei der IP-Abfrage" + e.getMessage());
         }
@@ -125,11 +130,13 @@ public class StartFrame extends JFrame {
 
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> new StartFrame());
+    @Override
+    public void onGameCanStart() {
+        MainFrame frame = new MainFrame(networker, false);
+        frame.setVisible(true);
+        this.setVisible(false);
     }
+
+
 
 }

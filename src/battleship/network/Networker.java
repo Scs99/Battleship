@@ -5,6 +5,7 @@
  */
 package battleship.network;
 
+import battleship.IGameCanStart;
 import battleship.IHitRequestReceived;
 import battleship.IHitResponseReceived;
 import java.io.IOException;
@@ -23,10 +24,11 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Maï
  */
-public class Networker implements INetworker {
+public class Networker implements INetworker, IGui {
 
     private final ArrayList<IHitResponseReceived> hitResponseReceivedListeners = new ArrayList<>();
     private final ArrayList<IHitRequestReceived> hitRequestReceivedListeners = new ArrayList<>();
+    private final ArrayList<IGameCanStart> gameCanStartListeners = new ArrayList<>();
 
     private Socket socket;
     private ObjectOutputStream writer;
@@ -67,7 +69,7 @@ public class Networker implements INetworker {
                 myIp = ip;
             } else {
                 InetAddress ipAddress = InetAddress.getLocalHost();
-                myIp = ipAddress.toString();
+                myIp = ipAddress.getHostAddress();
             }
             send(new NetworkPackage(new ConnectionDetails(myIp, myPort), "ConnectionDetails"));
 
@@ -114,6 +116,8 @@ public class Networker implements INetworker {
                     //ServerSocket ss = new ServerSocket(port);
                     ServerSocket ss = new ServerSocket(0);
                     myPort = ss.getLocalPort();
+                    InetAddress ipAddress = InetAddress.getLocalHost();
+                    myIp = ipAddress.getHostAddress();
                     s = ss.accept();
                     in = new ObjectInputStream(s.getInputStream());
                 } catch (IOException e) {
@@ -143,6 +147,7 @@ public class Networker implements INetworker {
                             if (socket == null) {
                                 connect(connectionDetails.ip, connectionDetails.port);
                                 System.out.println(timeStamp + " " + myName + " Server: Autoconnect successful.");
+                                gameCanStart();
                             }
                         }
 
@@ -176,6 +181,17 @@ public class Networker implements INetworker {
     public void receivedHitRequest(HitRequest hitRequest) {
         for (IHitRequestReceived receiver : hitRequestReceivedListeners) {
             receiver.onHitRequestReceived(hitRequest);
+        }
+    }
+
+    @Override
+    public void registerGameCanStart(IGameCanStart receiver) {
+        gameCanStartListeners.add(receiver);
+    }
+
+    public void gameCanStart() {
+        for (IGameCanStart receiver : gameCanStartListeners) {
+            receiver.onGameCanStart();
         }
     }
 
