@@ -37,10 +37,10 @@ public class ComputerGameTest {
         networker1 = new Networker("Player1");
         networker2 = new Networker("Player2");
 
-        networker1.startServer(60010);     
-        networker2.connect("localhost", 60010);
-        networker2.startServer(60011);
-        networker1.connect("localhost", 60011);
+        networker1.startServer();     
+        networker2.startServer();
+        TimeUnit.MILLISECONDS.sleep(200);
+        networker1.connect("localhost", networker2.getMyPort());
         
         Game game = new Game(networker1);
         ComputerGame computerGame = new ComputerGame(networker2);

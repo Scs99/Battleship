@@ -19,6 +19,9 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -58,11 +61,18 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         if (versusComputer) {
             Networker computerNetworker = new Networker("ComputerPlayer");
             computerGame = new ComputerGame(computerNetworker);
-
-            networkplayer.startServer(60010);
-            computerNetworker.connect("localhost", 60010);
-            computerNetworker.startServer(60011);
-            networkplayer.connect("localhost", 60011);
+            computerNetworker.startServer();
+            
+            try {
+                TimeUnit.MILLISECONDS.sleep(200);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            networkplayer.connect("localhost", computerNetworker.getMyPort());
+        } else {
+            
+            
+            
         }
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

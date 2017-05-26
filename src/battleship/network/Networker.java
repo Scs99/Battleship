@@ -10,6 +10,7 @@ import battleship.IHitResponseReceived;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -31,6 +32,8 @@ public class Networker implements INetworker {
     private ObjectOutputStream writer;
 
     public final String myName;
+    private int myPort;
+    private String myIp;
 
     public Networker(String myName) {
         this.myName = myName;
@@ -38,6 +41,14 @@ public class Networker implements INetworker {
 
     public boolean askPlayerToJoin(String ipAddress, String hostname) {
         return true;     // vorläufig zum compilieren
+    }
+
+    public String getMyIP() {
+        return myIp;
+    }
+
+    public int getMyPort() {
+        return myPort;
     }
 
     /**
@@ -51,6 +62,14 @@ public class Networker implements INetworker {
             socket = new Socket(ip, port);
             //writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             writer = new ObjectOutputStream(socket.getOutputStream());
+
+            if (ip.equalsIgnoreCase("Localhost")) {
+                myIp = ip;
+            } else {
+                InetAddress ipAddress = InetAddress.getLocalHost();
+                myIp = ipAddress.toString();
+            }
+            send(new NetworkPackage(new ConnectionDetails(myIp, myPort), "ConnectionDetails"));
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -82,7 +101,7 @@ public class Networker implements INetworker {
      *
      * @param port der Port des Servers.
      */
-    public void startServer(int port) {
+    public void startServer() {
 
         // Thread als anonyme innere Klasse.
         Thread t = new Thread() {
@@ -92,7 +111,9 @@ public class Networker implements INetworker {
             @Override
             public void run() {
                 try {
-                    ServerSocket ss = new ServerSocket(port);
+                    //ServerSocket ss = new ServerSocket(port);
+                    ServerSocket ss = new ServerSocket(0);
+                    myPort = ss.getLocalPort();
                     s = ss.accept();
                     in = new ObjectInputStream(s.getInputStream());
                 } catch (IOException e) {
@@ -116,6 +137,13 @@ public class Networker implements INetworker {
                             HitResponse hitResponse = (HitResponse) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Server: I received a HitResponse @ " + hitResponse.x + " " + hitResponse.y);
                             receivedHitResponse(hitResponse);
+                        } else if ("ConnectionDetails".equals(netPackage.typeOfObject)) {
+                            ConnectionDetails connectionDetails = (ConnectionDetails) netPackage.object;
+                            System.out.println(timeStamp + " " + myName + " Server: I received connection details " + connectionDetails.ip + " " + connectionDetails.port);
+                            if (socket == null) {
+                                connect(connectionDetails.ip, connectionDetails.port);
+                                System.out.println(timeStamp + " " + myName + " Server: Autoconnect successful.");
+                            }
                         }
 
                     } catch (IOException e) {

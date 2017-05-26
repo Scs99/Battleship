@@ -40,74 +40,67 @@ public class StartFrame extends JFrame {
     private final JPanel panelSelect = new JPanel();
     private final JPanel panelPc = new JPanel();
     private final JPanel panelDisplay = new JPanel();
-   
+
     private Networker networker;
-    
+
     static int port;
     static final String host = "localhost";
 
     public StartFrame() {
         super("Battleship - Select Play Mode");
-       
+
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(700, 200);
         setLayout(new BorderLayout());
         setResizable(false);
-        
+
         display.setBackground(Color.white);
         panel.setLayout(new GridLayout(2, 2));
         panelSelect.setLayout(new GridLayout(2, 2));
         panelPc.setLayout(new GridLayout(2, 2));
         panelDisplay.setLayout(new GridLayout(2, 2));
-        
-      
+
         panel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
-        pcPlayer.setPreferredSize(new Dimension(50,20));
+        pcPlayer.setPreferredSize(new Dimension(50, 20));
 
         add(panel, BorderLayout.CENTER);
-        
+
         panel.add(dummy);
         panel.add(panelDisplay);
-        panel.add(panelPc);        
-        panel.add(panelSelect);        
-        
+        panel.add(panelPc);
+        panel.add(panelSelect);
+
         panelPc.add(pcPlayer);
         panelSelect.add(select);
         panelDisplay.add(ipaddress);
         panelDisplay.add(display);
-        
-        
+
         panelSelect.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
         panelDisplay.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
         panelPc.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
-        
+
         pcPlayer.addActionListener((ActionEvent e) -> {
             pcPlayerOnButtonPressed();
         });
-        
+
         select.addActionListener((ActionEvent e) -> {
             networkPlayerOnButtonPressed();
         });
-        
+
         networker = new Networker("Player");
-        networker.startServer(1540);
-      
-        
-        try{
+        networker.startServer();
+
+        try {
             ipaddress.setText(InetAddress.getLocalHost() + " Port: 1540");
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Fehler bei der IP-Abfrage" + e.getMessage());
         }
-        
-        
- 
+
         setVisible(true);
 
     }
 
     public void pcPlayerOnButtonPressed() {
-        
         MainFrame frame = new MainFrame(networker, true);
         frame.setVisible(true);
         this.setVisible(false);
@@ -115,8 +108,18 @@ public class StartFrame extends JFrame {
     }
 
     public void networkPlayerOnButtonPressed() {
-        Networker networkplayer = new Networker("Player");
-        MainFrame frame = new MainFrame(networkplayer, false);
+
+        String connectionString = display.getText();
+
+        String[] parts = connectionString.split(":");
+        String ip = parts[0];
+        String portAsText = parts[1];
+        int port = Integer.parseInt(portAsText);
+        
+        networker.connect(ip, port);
+
+        //Networker networkplayer = new Networker("Player");
+        MainFrame frame = new MainFrame(networker, false);
         frame.setVisible(true);
         this.setVisible(false);
 
@@ -128,7 +131,5 @@ public class StartFrame extends JFrame {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> new StartFrame());
     }
-    
-    
 
 }
