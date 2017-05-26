@@ -34,7 +34,7 @@ public class StartFrame extends JFrame {
     private final JLabel ipaddress = new JLabel();
 
     private final JButton pcPlayer = new JButton("Play against AI");
-    private final JButton select = new JButton("Select");
+    private final JButton select = new JButton("Connect");
     private final JPanel panel = new JPanel();
     private final JPanel dummy = new JPanel();
     private final JPanel panelSelect = new JPanel();
@@ -50,7 +50,7 @@ public class StartFrame extends JFrame {
         super("Battleship - Select Play Mode");
        
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(600, 200);
+        setSize(700, 200);
         setLayout(new BorderLayout());
         setResizable(false);
         
@@ -65,9 +65,10 @@ public class StartFrame extends JFrame {
         pcPlayer.setPreferredSize(new Dimension(50,20));
 
         add(panel, BorderLayout.CENTER);
-        panel.add(panelPc);
-        panel.add(panelDisplay);
+        
         panel.add(dummy);
+        panel.add(panelDisplay);
+        panel.add(panelPc);        
         panel.add(panelSelect);        
         
         panelPc.add(pcPlayer);
