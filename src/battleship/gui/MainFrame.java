@@ -38,6 +38,7 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
     private static final Color COLOR_SHIP_HIT = new Color(255, 0, 0);
 
     private final JPanel playerField = new JPanel();
+    private final JPanel labelpanel = new JPanel();
     private final JPanel opponendField = new JPanel();
     private JLabel labelOppenent = new JLabel("Gegner");
     private JLabel labelMyPlayfield = new JLabel("Mein Spielfeld");
@@ -70,21 +71,30 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         setResizable(false);
         playerField.setLayout(new GridLayout(10, 10));
         opponendField.setLayout(new GridLayout(10, 10));
+        labelpanel.setLayout(new GridLayout(1,2));
 
         labelMyPlayfield.setSize(500, 200);
         labelMyPlayfield.setFont(new Font("Arial", Font.BOLD, 36));
         labelOppenent.setLocation(500, 500);
         labelOppenent.setFont(new Font("Arial", Font.BOLD, 36));
+        label.setFont(new Font("Arial", Font.BOLD, 20));
+        
 
-        add(labelMyPlayfield, BorderLayout.WEST);
+        //add(labelMyPlayfield, BorderLayout.WEST);
         add(playerField, BorderLayout.WEST);
-        add(labelOppenent, BorderLayout.EAST);
+        //add(labelOppenent, BorderLayout.EAST);
+        add(labelpanel, BorderLayout.NORTH);
         add(opponendField, BorderLayout.EAST);
         add(label, BorderLayout.SOUTH);
+        
+        labelpanel.add(labelMyPlayfield);
+        labelpanel.add(labelOppenent);
 
-        playerField.setBorder(BorderFactory.createEmptyBorder(200, 20, 80, 0));
-        opponendField.setBorder(BorderFactory.createEmptyBorder(200, 0, 80, 20));
-        label.setBorder(BorderFactory.createEmptyBorder(0, 120, 120, 0));
+        playerField.setBorder(BorderFactory.createEmptyBorder(60, 20, 80, 0));
+        opponendField.setBorder(BorderFactory.createEmptyBorder(60, 0, 80, 20));
+        label.setBorder(BorderFactory.createEmptyBorder(0, 80, 120, 0));
+        labelpanel.setBorder(BorderFactory.createEmptyBorder(80, 110, 0, 0));
+        labelOppenent.setBorder(BorderFactory.createEmptyBorder(0, 150, 0, 0));
 
         for (int y = 0; y < 10; ++y) {
             for (int x = 0; x < 10; ++x) {
@@ -157,9 +167,9 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         paintPlayfield(opponentPlayfield, opponendButton);
 
         if (isErrorText) {
-
+            label.setForeground(Color.red);
         } else {
-
+            label.setForeground(Color.black);
         }
         label.setText(statusText);
     }
