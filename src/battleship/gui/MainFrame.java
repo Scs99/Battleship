@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package battleship.gui;
 
 import battleship.ComputerGame;
@@ -28,33 +23,37 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import java.util.Random;
 
 /**
  *
  * @author Daniel Ouwehand
  */
-public class MainFrame extends JFrame implements IGameChanged, ActionListener {
+public class MainFrame extends JFrame implements IGameChanged {
 
     private static final Color COLOR_WATER = new Color(50, 186, 255);
+    private static final int COLOR_WATER_VARIANCE = 20;
     private static final Color COLOR_SHIP = new Color(64, 64, 64);
     private static final Color COLOR_WATER_HIT = new Color(214, 127, 255);
     private static final Color COLOR_SHIP_HIT = new Color(255, 0, 0);
 
     private final JPanel playerField = new JPanel();
+    private final JPanel opponentField = new JPanel();
     private final JPanel labelpanel = new JPanel();
-    private final JPanel opponendField = new JPanel();
-    private JLabel labelOppenent = new JLabel("Gegner");
-    private JLabel labelMyPlayfield = new JLabel("Mein Spielfeld");
-    private final JLabel label = new JLabel("text for placing ships");
-    private int board[][] = new int[10][10];
-    private JButton playerButton[][] = new JButton[10][10];
-    private JButton opponendButton[][] = new JButton[10][10];
+    private JLabel labelOpponentTitle = new JLabel("Gegner");
+    private JLabel labelMyPlayfieldTitle = new JLabel("Mein Spielfeld");
+    private final JLabel labelStatusText = new JLabel();
+    private JButton[][] playerButtons = new JButton[10][10];
+    private JButton[][] opponendButtons = new JButton[10][10];
+    
     private Game game;
     private ComputerGame computerGame;
+    private final Random rand;
 
     public MainFrame(Networker networkplayer, boolean versusComputer) {
 
-        super("playField");
+        super("Battleship - Lernteam 6");
+        rand = new Random();
         game = new Game(networkplayer);
         game.registerGameChanged(this);
 
@@ -68,7 +67,7 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
                 networkplayer.connect("localhost", computerNetworker.getMyPort());
                 TimeUnit.MILLISECONDS.sleep(200);
                 computerGame.placeAllShips();
-                
+
             } catch (InterruptedException ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -81,59 +80,58 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         setLayout(new BorderLayout());
         setResizable(false);
         playerField.setLayout(new GridLayout(10, 10));
-        opponendField.setLayout(new GridLayout(10, 10));
+        opponentField.setLayout(new GridLayout(10, 10));
         labelpanel.setLayout(new GridLayout(1, 2));
 
-        labelMyPlayfield.setSize(500, 200);
-        labelMyPlayfield.setFont(new Font("Arial", Font.BOLD, 36));
-        labelOppenent.setLocation(500, 500);
-        labelOppenent.setFont(new Font("Arial", Font.BOLD, 36));
-        label.setFont(new Font("Arial", Font.BOLD, 20));
+        labelMyPlayfieldTitle.setSize(500, 200);
+        labelMyPlayfieldTitle.setFont(new Font("Arial", Font.BOLD, 36));
+        labelOpponentTitle.setLocation(500, 500);
+        labelOpponentTitle.setFont(new Font("Arial", Font.BOLD, 36));
+        labelStatusText.setFont(new Font("Arial", Font.BOLD, 20));
 
-        //add(labelMyPlayfield, BorderLayout.WEST);
         add(playerField, BorderLayout.WEST);
-        //add(labelOppenent, BorderLayout.EAST);
         add(labelpanel, BorderLayout.NORTH);
-        add(opponendField, BorderLayout.EAST);
-        add(label, BorderLayout.SOUTH);
+        add(opponentField, BorderLayout.EAST);
+        add(labelStatusText, BorderLayout.SOUTH);
 
-        labelpanel.add(labelMyPlayfield);
-        labelpanel.add(labelOppenent);
+        labelpanel.add(labelMyPlayfieldTitle);
+        labelpanel.add(labelOpponentTitle);
 
         playerField.setBorder(BorderFactory.createEmptyBorder(60, 20, 80, 0));
-        opponendField.setBorder(BorderFactory.createEmptyBorder(60, 0, 80, 20));
-        label.setBorder(BorderFactory.createEmptyBorder(0, 80, 120, 0));
+        opponentField.setBorder(BorderFactory.createEmptyBorder(60, 0, 80, 20));
+        labelStatusText.setBorder(BorderFactory.createEmptyBorder(0, 80, 120, 0));
         labelpanel.setBorder(BorderFactory.createEmptyBorder(80, 110, 0, 0));
-        labelOppenent.setBorder(BorderFactory.createEmptyBorder(0, 150, 0, 0));
+        labelOpponentTitle.setBorder(BorderFactory.createEmptyBorder(0, 150, 0, 0));
 
         for (int y = 0; y < 10; ++y) {
             for (int x = 0; x < 10; ++x) {
 
-                playerButton[y][x] = new JButton();
-                opponendButton[y][x] = new JButton();
+                playerButtons[y][x] = new JButton();
+                opponendButtons[y][x] = new JButton();
 
-                playerField.add(playerButton[y][x]);
-                opponendField.add(opponendButton[y][x]);
+                playerField.add(playerButtons[y][x]);
+                opponentField.add(opponendButtons[y][x]);
 
-                playerButton[y][x].addActionListener(new ButtonMyPlayfield(y, x));
-                opponendButton[y][x].addActionListener(new ButtonOppenent(y, x));
+                playerButtons[y][x].addActionListener(new ButtonMyPlayfield(y, x));
+                opponendButtons[y][x].addActionListener(new ButtonOppenent(y, x));
 
-                playerButton[y][x].setPreferredSize(new Dimension(40, 40));
-                opponendButton[y][x].setPreferredSize(new Dimension(40, 40));
+                playerButtons[y][x].setPreferredSize(new Dimension(40, 40));
+                opponendButtons[y][x].setPreferredSize(new Dimension(40, 40));
 
             }
-
         }
+
+        paintPlayfieldInitial(playerButtons);
+        paintPlayfieldInitial(opponendButtons);
 
         game.initialize();
         setVisible(true);
-
     }
 
     private void enablePlayerButtons(boolean setEnabled) {
         for (int y = 0; y < 10; ++y) {
             for (int x = 0; x < 10; ++x) {
-                playerButton[y][x].setEnabled(setEnabled);
+                playerButtons[y][x].setEnabled(setEnabled);
             }
         }
     }
@@ -141,14 +139,9 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
     private void enableOpponentButtons(boolean setEnabled) {
         for (int y = 0; y < 10; ++y) {
             for (int x = 0; x < 10; ++x) {
-                opponendButton[y][x].setEnabled(setEnabled);
+                opponendButtons[y][x].setEnabled(setEnabled);
             }
         }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
     }
 
     @Override
@@ -177,24 +170,32 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
                 break;
         }
 
-        paintPlayfield(myPlayfield, playerButton);
-        paintPlayfield(opponentPlayfield, opponendButton);
+        repaintPlayfield(myPlayfield, playerButtons);
+        repaintPlayfield(opponentPlayfield, opponendButtons);
 
         if (isErrorText) {
-            label.setForeground(Color.red);
+            labelStatusText.setForeground(Color.red);
         } else {
-            label.setForeground(Color.black);
+            labelStatusText.setForeground(Color.black);
         }
-        label.setText(statusText);
+        labelStatusText.setText(statusText);
     }
 
-    private void paintPlayfield(Playfield playfield, JButton[][] buttonsToPaint) {
+    private void paintPlayfieldInitial(JButton[][] buttonsToPaint) {
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                Color waterColor = new Color(COLOR_WATER.getRed(), (COLOR_WATER.getGreen() - COLOR_WATER_VARIANCE) + rand.nextInt(COLOR_WATER_VARIANCE), COLOR_WATER.getBlue());
+                buttonsToPaint[y][x].setBackground(waterColor);
+            }
+        }
+    }
+
+    private void repaintPlayfield(Playfield playfield, JButton[][] buttonsToPaint) {
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
                 Field field = playfield.fields[y * 10 + x];
                 switch (field.getState()) {
                     case WATER:
-                        buttonsToPaint[y][x].setBackground(COLOR_WATER);
                         break;
                     case WATER_HIT:
                         buttonsToPaint[y][x].setBackground(COLOR_WATER_HIT);
