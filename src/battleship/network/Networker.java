@@ -8,6 +8,7 @@ package battleship.network;
 import battleship.IGameCanStart;
 import battleship.IHitRequestReceived;
 import battleship.IHitResponseReceived;
+import battleship.IStartGameRequest;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -28,6 +29,7 @@ public class Networker implements INetworker, IGui {
 
     private final ArrayList<IHitResponseReceived> hitResponseReceivedListeners = new ArrayList<>();
     private final ArrayList<IHitRequestReceived> hitRequestReceivedListeners = new ArrayList<>();
+    private final ArrayList<IStartGameRequest> startGameRequestReceivedListeners = new ArrayList<>();
     private final ArrayList<IGameCanStart> gameCanStartListeners = new ArrayList<>();
 
     private Socket socket;
@@ -141,6 +143,10 @@ public class Networker implements INetworker, IGui {
                             HitResponse hitResponse = (HitResponse) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Server: I received a HitResponse @ " + hitResponse.x + " " + hitResponse.y);
                             receivedHitResponse(hitResponse);
+                        } else if ("StartGameRequest".equals(netPackage.typeOfObject)) {         
+                            StartGameRequest startGameRequest = (StartGameRequest) netPackage.object;
+                            System.out.println(timeStamp + " " + myName + " Start game request received.");
+                            receivedStartGameRequest(startGameRequest);
                         } else if ("ConnectionDetails".equals(netPackage.typeOfObject)) {
                             ConnectionDetails connectionDetails = (ConnectionDetails) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Server: I received connection details " + connectionDetails.ip + " " + connectionDetails.port);
@@ -195,4 +201,14 @@ public class Networker implements INetworker, IGui {
         }
     }
 
+    @Override
+    public void registerStartGameRequest(IStartGameRequest receiver) {
+        startGameRequestReceivedListeners.add(receiver);
+    }
+
+    public void receivedStartGameRequest(StartGameRequest startGameRequest){
+        for(IStartGameRequest receiver : startGameRequestReceivedListeners){
+            receiver.onStartGameRequestReceived(startGameRequest);
+        }
+    }
 }

@@ -9,6 +9,7 @@ import battleship.network.HitRequest;
 import battleship.network.HitResponse;
 import battleship.network.NetworkPackage;
 import battleship.network.INetworker;
+import battleship.network.StartGameRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -26,7 +27,6 @@ public class ComputerGame extends Game {
     public ComputerGame(INetworker networker) {
         super(networker);
         rand = new Random();
-        placeAllShips();
 
         shootingPool = new ArrayList<>();
         for (Field f : myPlayfield.fields) {
@@ -136,6 +136,7 @@ public class ComputerGame extends Game {
             //System.out.println("");
             //myPlayfield.Print();
             //System.out.println("");
+            myNetworker.send(new NetworkPackage(new StartGameRequest(myFirstTurnRandomNumber), "StartGameRequest"));
         }
     }
 
@@ -204,6 +205,15 @@ public class ComputerGame extends Game {
                 //setStatusText("Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.", false);
             }
             endMyTurn();
+        }
+    }
+    
+    @Override
+    public void onStartGameRequestReceived(StartGameRequest startGameRequest) {
+        System.out.println("Determining first turn: My Nr.: " + myFirstTurnRandomNumber + " Opponent Nr. " + startGameRequest.randomFirstTurn);
+        if(myFirstTurnRandomNumber >= startGameRequest.randomFirstTurn){ 
+            System.out.println("I get the first turn.");
+            shoot();
         }
     }
 

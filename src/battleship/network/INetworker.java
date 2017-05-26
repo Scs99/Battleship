@@ -7,6 +7,7 @@ package battleship.network;
 
 import battleship.IHitRequestReceived;
 import battleship.IHitResponseReceived;
+import battleship.IStartGameRequest;
 
 /**
  *
@@ -16,6 +17,7 @@ public interface INetworker {
     
     void registerHitResponse(IHitResponseReceived receiver);
     void registerHitRequest(IHitRequestReceived receiver);
+    void registerStartGameRequest(IStartGameRequest receiver);
     void send(NetworkPackage netPackage);
     
 }

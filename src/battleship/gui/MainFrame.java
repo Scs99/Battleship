@@ -62,17 +62,18 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
             Networker computerNetworker = new Networker("ComputerPlayer");
             computerGame = new ComputerGame(computerNetworker);
             computerNetworker.startServer();
-            
+
             try {
                 TimeUnit.MILLISECONDS.sleep(200);
+                networkplayer.connect("localhost", computerNetworker.getMyPort());
+                TimeUnit.MILLISECONDS.sleep(200);
+                computerGame.placeAllShips();
+                
             } catch (InterruptedException ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
-            networkplayer.connect("localhost", computerNetworker.getMyPort());
         } else {
-            
-            
-            
+
         }
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -81,14 +82,13 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         setResizable(false);
         playerField.setLayout(new GridLayout(10, 10));
         opponendField.setLayout(new GridLayout(10, 10));
-        labelpanel.setLayout(new GridLayout(1,2));
+        labelpanel.setLayout(new GridLayout(1, 2));
 
         labelMyPlayfield.setSize(500, 200);
         labelMyPlayfield.setFont(new Font("Arial", Font.BOLD, 36));
         labelOppenent.setLocation(500, 500);
         labelOppenent.setFont(new Font("Arial", Font.BOLD, 36));
         label.setFont(new Font("Arial", Font.BOLD, 20));
-        
 
         //add(labelMyPlayfield, BorderLayout.WEST);
         add(playerField, BorderLayout.WEST);
@@ -96,7 +96,7 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         add(labelpanel, BorderLayout.NORTH);
         add(opponendField, BorderLayout.EAST);
         add(label, BorderLayout.SOUTH);
-        
+
         labelpanel.add(labelMyPlayfield);
         labelpanel.add(labelOppenent);
 
@@ -157,6 +157,10 @@ public class MainFrame extends JFrame implements IGameChanged, ActionListener {
         switch (gameState) {
             case IS_PLACING:
                 enablePlayerButtons(true);
+                enableOpponentButtons(false);
+                break;
+            case IS_WAITING_FOR_OPPONENT:
+                enablePlayerButtons(false);
                 enableOpponentButtons(false);
                 break;
             case IS_MYTURN:

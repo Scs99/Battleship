@@ -4,14 +4,16 @@ import battleship.network.HitRequest;
 import battleship.network.HitResponse;
 import battleship.network.INetworker;
 import battleship.network.NetworkPackage;
+import battleship.network.StartGameRequest;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Game Dei Spiellogik des Spiels Battleship.
  *
  * @author Louis Rast
  */
-public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
+public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, IStartGameRequest {
 
     private final ArrayList<IGameChanged> gameChangedListeners = new ArrayList<>();
 
@@ -19,6 +21,10 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
     private boolean myTurn;
     private String statusText;
     private GameState gameState;
+    private Random rand;
+    public final int myFirstTurnRandomNumber;
+    private int opponentFirstTurnRandomNumber;
+    private boolean opponentStartRequestReceived;
 
     /**
      * Das eigene Spielfeld, beeinhaltet die eigenen Schiffe.
@@ -95,8 +101,11 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         // Registrieren auf die Events des Networker wenn er HitReceived oder HitResponse Packete empfängt.
         this.myNetworker.registerHitRequest(this);
         this.myNetworker.registerHitResponse(this);
+        this.myNetworker.registerStartGameRequest(this);
         this.gameState = GameState.IS_PLACING;
 
+        this.rand = new Random();
+        this.myFirstTurnRandomNumber = rand.nextInt(10000);
     }
 
     public void initialize() {
@@ -109,7 +118,9 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
                 placeShipPart(ship, x, y);
 
                 if (areAllShipsPlaced()) {
-                    gameState = GameState.IS_MYTURN;
+                    gameState = GameState.IS_WAITING_FOR_OPPONENT;
+                    this.myNetworker.send(new NetworkPackage(new StartGameRequest(this.myFirstTurnRandomNumber), "StartGameRequest"));
+                    determineFirstTurn();
                     gameChanged();
                 }
                 return;
@@ -117,6 +128,17 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
         }
         gameState = GameState.IS_MYTURN;
         gameChanged();
+    }
+
+    public void determineFirstTurn() {
+        if (areAllShipsPlaced() && opponentStartRequestReceived) {
+            if (myFirstTurnRandomNumber >= opponentFirstTurnRandomNumber) {
+                // If same numbers are drawn, its first come first served.
+                startMyTurn();
+            } else {
+                endMyTurn();
+            }
+        }
     }
 
     private boolean areAllShipsPlaced() {
@@ -319,12 +341,14 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
             if (hasWon()) {
                 this.statusText = "Gewonnen! Alle gegnerischen Schiffe zerstört!";
+                this.gameState = GameState.IS_OVER;
             } else if (hitResponse.shipDestroyed) {
                 this.statusText = "Gegnerisches Schiff zerstört! Schiessen Sie erneut.";
+                startMyTurn();
             } else {
                 this.statusText = "Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.";
+                startMyTurn();
             }
-            startMyTurn();
         } else {
             this.statusText = "Schuss ins Wasser. Warten sie auf den Zug des Gegners.";
             endMyTurn();
@@ -351,12 +375,14 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
             if (hasLost()) {
                 this.statusText = "Verlorern! Alle Ihre Schiffe wurden zerstört.";
+                this.gameState = GameState.IS_OVER;
             } else if (possibleShip.isDestroyed()) {
                 this.statusText = "Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.";
+                endMyTurn();
             } else {
                 this.statusText = "Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.";
+                endMyTurn();
             }
-            endMyTurn();
         }
         myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
         gameChanged();
@@ -372,4 +398,12 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived {
             receiver.onGameChanged(this.myPlayfield, this.opponentPlayfield, this.statusText, false, this.gameState);
         }
     }
+
+    @Override
+    public void onStartGameRequestReceived(StartGameRequest startGameRequest) {
+        this.opponentFirstTurnRandomNumber = startGameRequest.randomFirstTurn;
+        this.opponentStartRequestReceived = true;
+        determineFirstTurn();
+    }
+
 }

@@ -5,10 +5,12 @@
  */
 package battleship;
 
+import battleship.network.StartGameRequest;
+
 /**
  *
  * @author admin
  */
-public enum GameState {
-    IS_CONNECTING , IS_PLACING, IS_WAITING_FOR_OPPONENT, IS_MYTURN, IS_NOT_MYTURN, IS_OVER
+public interface IStartGameRequest {
+    void onStartGameRequestReceived(StartGameRequest startGameRequest);
 }
