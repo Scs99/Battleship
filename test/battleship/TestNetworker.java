@@ -17,9 +17,6 @@ import java.util.ArrayList;
  */
 public class TestNetworker implements INetworker {
 
-    private final ArrayList<IHitResponseReceived> hitResponseReceivedListeners = new ArrayList<>();
-    private final ArrayList<IHitRequestReceived> hitRequestReceivedListeners = new ArrayList<>();
-
     public final String myName;
 
     public TestNetworker(String myName) {
@@ -38,6 +35,11 @@ public class TestNetworker implements INetworker {
 
     @Override
     public void send(NetworkPackage netPackage) {
+        // Do nothing
+    }
+
+    @Override
+    public void registerStartGameRequest(IStartGameRequest receiver) {
         // Do nothing
     }
 

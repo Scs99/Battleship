@@ -5,9 +5,6 @@
  */
 package battleship;
 
-import battleship.network.Networker;
-import battleship.network.Participant;
-import org.junit.After;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
