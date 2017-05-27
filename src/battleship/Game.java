@@ -136,11 +136,14 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
     public void determineFirstTurn() {
         if (areAllShipsPlaced() && opponentStartRequestReceived) {
+            System.out.println("Determining first turn: My Nr.: " + myFirstTurnRandomNumber + " Opponent Nr. " + opponentFirstTurnRandomNumber);
             if (myFirstTurnRandomNumber >= opponentFirstTurnRandomNumber) {
                 // If same numbers are drawn, its first come first served.
                 startMyTurn();
+                setStatusMessage("Sie dürfen beginnen.", StatusMessageType.INFO);
             } else {
                 endMyTurn();
+                setStatusMessage("Ihr Gegner darf beginnen.", StatusMessageType.INFO);
             }
         }
     }
@@ -331,6 +334,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
     private void setStatusMessage(String text, StatusMessageType type) {
         this.statusMessage = new StatusMessage(text, type);
+        gameChanged();
     }
 
     /**

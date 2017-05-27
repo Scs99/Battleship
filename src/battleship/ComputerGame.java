@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package battleship;
 
 import battleship.network.HitRequest;
@@ -11,13 +6,12 @@ import battleship.network.NetworkPackage;
 import battleship.network.INetworker;
 import battleship.network.StartGameRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
  *
- * @author admin
+ * @author Louis Rast
  */
 public class ComputerGame extends Game {
 
@@ -133,9 +127,6 @@ public class ComputerGame extends Game {
                     }
                 }
             }
-            //System.out.println("");
-            //myPlayfield.Print();
-            //System.out.println("");
             myNetworker.send(new NetworkPackage(new StartGameRequest(myFirstTurnRandomNumber), "StartGameRequest"));
         }
     }
@@ -157,18 +148,10 @@ public class ComputerGame extends Game {
         if (hitResponse.hit) {
             opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
             opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
-            if (hasWon()) {
-                //setStatusText("Gewonnen! Alle gegnerischen Schiffe zerstört!", false);
-            } else if (hitResponse.shipDestroyed) {
-                //setStatusText("Gegnerisches Schiff zerstört! Schiessen Sie erneut.", false);
-            } else {
-                //setStatusText("Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.", false);
-            }
             startMyTurn();
             shoot();
 
         } else {
-            //setStatusText("dsjhfgjfgjj Schuss ins Wasser. Warten sie auf den Zug des Gegners.", false);
             endMyTurn();
         }
         gameChanged();
