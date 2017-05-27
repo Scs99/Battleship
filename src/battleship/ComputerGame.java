@@ -183,35 +183,36 @@ public class ComputerGame extends Game {
         }
 
         HitResponse hitResponse;
-        myPlayfield.shootAt(hitRequest.x, hitRequest.y);
         Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
 
-        if (possibleShip == null) {
+        if (myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y).getState() == FieldState.SHIP_HIT) {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
             myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
             gameChanged();
-            //setStatusText("Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.", false);
             startMyTurn();
             shoot();
         } else {
-            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
-            myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
-            gameChanged();
-            if (hasLost()) {
-                //setStatusText("Verlorern! Alle Ihre Schiffe wurden zerstört.", false);
-            } else if (possibleShip.isDestroyed()) {
-                //setStatusText("Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.", false);
+            myPlayfield.shootAt(hitRequest.x, hitRequest.y);
+
+            if (possibleShip == null) {
+                hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
+                myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+                gameChanged();
+                startMyTurn();
+                shoot();
             } else {
-                //setStatusText("Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.", false);
+                hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
+                myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+                gameChanged();
+                endMyTurn();
             }
-            endMyTurn();
         }
     }
-    
+
     @Override
     public void onStartGameRequestReceived(StartGameRequest startGameRequest) {
         System.out.println("Determining first turn: My Nr.: " + myFirstTurnRandomNumber + " Opponent Nr. " + startGameRequest.randomFirstTurn);
-        if(myFirstTurnRandomNumber >= startGameRequest.randomFirstTurn){ 
+        if (myFirstTurnRandomNumber >= startGameRequest.randomFirstTurn) {
             System.out.println("I get the first turn.");
             shoot();
         }

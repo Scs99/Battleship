@@ -19,9 +19,9 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
     public final INetworker myNetworker;
     private boolean myTurn;
-    
+
     private StatusMessage statusMessage;
-    
+
     private GameState gameState;
     private Random rand;
     public final int myFirstTurnRandomNumber;
@@ -368,24 +368,31 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
     @Override
     public void onHitRequestReceived(HitRequest hitRequest) {
         HitResponse hitResponse;
-        myPlayfield.shootAt(hitRequest.x, hitRequest.y);
-        Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
 
-        if (possibleShip == null) {
+        if (myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y).getState() == FieldState.SHIP_HIT) {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
-            setStatusMessage("Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.", StatusMessageType.INFO);
-            startMyTurn();
+            setStatusMessage("Der Gegner hat auf ein bereits zerstörtes Schiff geschossen. Sie sind am Zug.", StatusMessageType.INFO);
+            startMyTurn();          
         } else {
-            hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
-            if (hasLost()) {
-                setStatusMessage("Verlorern! Alle Ihre Schiffe wurden zerstört.", StatusMessageType.INFO);
-                this.gameState = GameState.IS_OVER;
-            } else if (possibleShip.isDestroyed()) {
-                setStatusMessage("Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.", StatusMessageType.INFO);
-                endMyTurn();
+            Ship possibleShip = getShipOfField(myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y));
+            myPlayfield.shootAt(hitRequest.x, hitRequest.y);
+
+            if (possibleShip == null) {
+                hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
+                setStatusMessage("Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.", StatusMessageType.INFO);
+                startMyTurn();
             } else {
-                setStatusMessage("Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.", StatusMessageType.INFO);
-                endMyTurn();
+                hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
+                if (hasLost()) {
+                    setStatusMessage("Verlorern! Alle Ihre Schiffe wurden zerstört.", StatusMessageType.INFO);
+                    this.gameState = GameState.IS_OVER;
+                } else if (possibleShip.isDestroyed()) {
+                    setStatusMessage("Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.", StatusMessageType.INFO);
+                    endMyTurn();
+                } else {
+                    setStatusMessage("Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.", StatusMessageType.INFO);
+                    endMyTurn();
+                }
             }
         }
         myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
