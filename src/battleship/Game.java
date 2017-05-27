@@ -19,7 +19,9 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
     public final INetworker myNetworker;
     private boolean myTurn;
-    private String statusText;
+    
+    private StatusMessage statusMessage;
+    
     private GameState gameState;
     private Random rand;
     public final int myFirstTurnRandomNumber;
@@ -47,8 +49,8 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
      *
      * @return Den aktuellen Spielstatus.
      */
-    public String getStatusText() {
-        return statusText;
+    public StatusMessage getStatusMessage() {
+        return statusMessage;
     }
 
     /**
@@ -96,7 +98,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
         this.ships.add(new Ship(2));
         this.ships.add(new Ship(2));
         this.myTurn = false;
-        this.statusText = "Willkommen zum Spiel Battleship.";
+        setStatusMessage("Willkommen zum Spiel Battleship. Beginnen sie mit dem Platzieren ihrer Schiffe.", StatusMessageType.INFO);
 
         // Registrieren auf die Events des Networker wenn er HitReceived oder HitResponse Packete empfängt.
         this.myNetworker.registerHitRequest(this);
@@ -114,11 +116,13 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
     public void placeShip(final int x, final int y) {
         for (Ship ship : ships) {
+            setStatusMessage(ship.size + "er Schiff platzieren.", StatusMessageType.INFO);
             if (!ship.isCompleted()) {
                 placeShipPart(ship, x, y);
 
                 if (areAllShipsPlaced()) {
                     gameState = GameState.IS_WAITING_FOR_OPPONENT;
+                    setStatusMessage("Sie haben alle ihre Schiffe platziert. Warten Sie bis ihr Gegner soweit ist.", StatusMessageType.INFO);
                     this.myNetworker.send(new NetworkPackage(new StartGameRequest(this.myFirstTurnRandomNumber), "StartGameRequest"));
                     determineFirstTurn();
                     gameChanged();
@@ -163,7 +167,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
      */
     public boolean placeShipPart(final Ship shipToPlace, final int x, final int y) {
         if (shipToPlace.isCompleted()) {
-            this.statusText = "Das ausgewählte Schiff wurde bereits platziert.";
+            setStatusMessage("Das ausgewählte Schiff wurde bereits platziert.", StatusMessageType.ERROR);
             gameChanged();
             return false;
         }
@@ -172,7 +176,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
             ArrayList<Field> surrounding = myPlayfield.getSurrounding(x, y);
             for (Field field : surrounding) {
                 if (field.getState() == FieldState.SHIP) {
-                    this.statusText = "Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.";
+                    setStatusMessage("Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.", StatusMessageType.ERROR);
                     gameChanged();
                     return false;
                 }
@@ -187,7 +191,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
             Field toBePlaced = myPlayfield.getFieldFromCoordinate(x, y);
             ArrayList<Field> validNeighbours = myPlayfield.getValideNeighbours(shipToPlace.fields.get(0).x, shipToPlace.fields.get(0).y);
             if (!validNeighbours.contains(toBePlaced)) {
-                this.statusText = "Der zweite Schiffteil muss an den ersten angrenzen. Versuchen Sie ein anderes Feld.";
+                setStatusMessage("Der zweite Schiffteil muss an den ersten angrenzen. Versuchen Sie ein anderes Feld.", StatusMessageType.ERROR);
                 gameChanged();
                 return false;
             }
@@ -197,7 +201,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
                     for (Field shipField : ship.fields) {
                         ArrayList<Field> surrounding = myPlayfield.getSurrounding(shipField.x, shipField.y);
                         if (surrounding.contains(toBePlaced)) {
-                            this.statusText = "Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.";
+                            setStatusMessage("Sie können Schiffe nicht direkt nebeneinander platzieren. Versuchen Sie ein anderes Feld.", StatusMessageType.ERROR);
                             gameChanged();
                             return false;
                         }
@@ -217,7 +221,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
         if (shipToPlace.fields.get(0).y == shipToPlace.fields.get(1).y) {
 
             if (toBePlaced.y != shipToPlace.fields.get(0).y) {
-                this.statusText = "Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.";
+                setStatusMessage("Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.", StatusMessageType.ERROR);
                 gameChanged();
                 return false;
             }
@@ -242,7 +246,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
         } else if (shipToPlace.fields.get(0).x == shipToPlace.fields.get(1).x) {
 
             if (toBePlaced.x != shipToPlace.fields.get(0).x) {
-                this.statusText = "Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.";
+                setStatusMessage("Sie müssen den Schiffsteil am Anfang oder am Ende des Schiffes platzieren. Versuchen Sie ein anderes Feld.", StatusMessageType.ERROR);
                 gameChanged();
                 return false;
             }
@@ -278,7 +282,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
         endMyTurn();
         opponentPlayfield.shootAt(x, y);
         HitRequest hitRequest = new HitRequest(x, y);
-        this.statusText = "Schuss auf X:" + x + "| Y:" + y + ". Warte auf Rückmeldung des Gegners.";
+        setStatusMessage("Schuss auf (" + x + "|" + y + "). Warte auf Rückmeldung des Gegners.", StatusMessageType.INFO);
         myNetworker.send(new NetworkPackage(hitRequest, "HitRequest"));
         gameChanged();
         return hitRequest;
@@ -296,7 +300,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
     private void addAndMarkShipPart(final Ship ship, final Field shipPart) {
         ship.addShipPart(shipPart);
         myPlayfield.placeAt(shipPart.x, shipPart.y);
-        this.statusText = "Sie haben " + ship.nrOfPlacedParts() + "/" + ship.size + " Schiffteilen platziert.";
+        setStatusMessage(ship.size + "er Schiff. Sie haben " + ship.nrOfPlacedParts() + "/" + ship.size + " Schiffteilen platziert.", StatusMessageType.INFO);
     }
 
     public boolean hasLost() {
@@ -325,8 +329,8 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
         return false;
     }
 
-    private void setStatusText(String statusText, boolean isError) {
-        this.statusText = statusText;
+    private void setStatusMessage(String text, StatusMessageType type) {
+        this.statusMessage = new StatusMessage(text, type);
     }
 
     /**
@@ -340,17 +344,17 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
             opponentPlayfield.placeAt(hitResponse.x, hitResponse.y);
             opponentPlayfield.shootAt(hitResponse.x, hitResponse.y);
             if (hasWon()) {
-                this.statusText = "Gewonnen! Alle gegnerischen Schiffe zerstört!";
+                setStatusMessage("Gewonnen! Alle gegnerischen Schiffe zerstört!", StatusMessageType.INFO);
                 this.gameState = GameState.IS_OVER;
             } else if (hitResponse.shipDestroyed) {
-                this.statusText = "Gegnerisches Schiff zerstört! Schiessen Sie erneut.";
+                setStatusMessage("Gegnerisches Schiff zerstört! Schiessen Sie erneut.", StatusMessageType.INFO);
                 startMyTurn();
             } else {
-                this.statusText = "Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.";
+                setStatusMessage("Treffer auf ein gegnerisches Schiff! Schiessen Sie erneut.", StatusMessageType.INFO);
                 startMyTurn();
             }
         } else {
-            this.statusText = "Schuss ins Wasser. Warten sie auf den Zug des Gegners.";
+            setStatusMessage("Schuss ins Wasser. Warten sie auf den Zug des Gegners.", StatusMessageType.INFO);
             endMyTurn();
         }
         gameChanged();
@@ -369,18 +373,18 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
         if (possibleShip == null) {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
-            this.statusText = "Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.";
+            setStatusMessage("Der Gegner hat Ihre Schiffe verfehlt. Sie sind am Zug.", StatusMessageType.INFO);
             startMyTurn();
         } else {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
             if (hasLost()) {
-                this.statusText = "Verlorern! Alle Ihre Schiffe wurden zerstört.";
+                setStatusMessage("Verlorern! Alle Ihre Schiffe wurden zerstört.", StatusMessageType.INFO);
                 this.gameState = GameState.IS_OVER;
             } else if (possibleShip.isDestroyed()) {
-                this.statusText = "Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.";
+                setStatusMessage("Der Gegner hat eines Ihrer Schiffe zerstört! Er darf erneut schiessen.", StatusMessageType.INFO);
                 endMyTurn();
             } else {
-                this.statusText = "Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.";
+                setStatusMessage("Der Gegner hat eines Ihrer Schiffe getroffen! Er darf erneut schiessen.", StatusMessageType.INFO);
                 endMyTurn();
             }
         }
@@ -395,7 +399,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
 
     public void gameChanged() {
         for (IGameChanged receiver : gameChangedListeners) {
-            receiver.onGameChanged(this.myPlayfield, this.opponentPlayfield, this.statusText, false, this.gameState);
+            receiver.onGameChanged(this.myPlayfield, this.opponentPlayfield, this.statusMessage, false, this.gameState);
         }
     }
 

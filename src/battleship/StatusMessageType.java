@@ -9,6 +9,6 @@ package battleship;
  *
  * @author admin
  */
-public interface IGameChanged {
-    void onGameChanged(Playfield myPlayfield, Playfield opponentPlayfield,  StatusMessage message, boolean isErrorText, GameState gameState);
+public enum StatusMessageType {
+    INFO, ERROR
 }

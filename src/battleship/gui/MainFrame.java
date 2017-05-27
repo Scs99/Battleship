@@ -6,6 +6,7 @@ import battleship.Game;
 import battleship.GameState;
 import battleship.IGameChanged;
 import battleship.Playfield;
+import battleship.StatusMessage;
 import battleship.network.Networker;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -45,7 +46,7 @@ public class MainFrame extends JFrame implements IGameChanged {
     private final JLabel labelStatusText = new JLabel();
     private JButton[][] playerButtons = new JButton[10][10];
     private JButton[][] opponendButtons = new JButton[10][10];
-    
+
     private Game game;
     private ComputerGame computerGame;
     private final Random rand;
@@ -145,7 +146,7 @@ public class MainFrame extends JFrame implements IGameChanged {
     }
 
     @Override
-    public void onGameChanged(Playfield myPlayfield, Playfield opponentPlayfield, String statusText, boolean isErrorText, GameState gameState) {
+    public void onGameChanged(Playfield myPlayfield, Playfield opponentPlayfield, StatusMessage message, boolean isErrorText, GameState gameState) {
 
         switch (gameState) {
             case IS_PLACING:
@@ -173,12 +174,16 @@ public class MainFrame extends JFrame implements IGameChanged {
         repaintPlayfield(myPlayfield, playerButtons);
         repaintPlayfield(opponentPlayfield, opponendButtons);
 
-        if (isErrorText) {
-            labelStatusText.setForeground(Color.red);
-        } else {
-            labelStatusText.setForeground(Color.black);
+        switch (message.type) {
+            case INFO:
+                labelStatusText.setForeground(Color.BLACK);
+                break;
+            case ERROR:
+                labelStatusText.setForeground(Color.RED);
+                break;
         }
-        labelStatusText.setText(statusText);
+
+        labelStatusText.setText(message.message);
     }
 
     private void paintPlayfieldInitial(JButton[][] buttonsToPaint) {
