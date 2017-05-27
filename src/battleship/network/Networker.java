@@ -73,7 +73,7 @@ public class Networker implements INetworker, IGui {
                 InetAddress ipAddress = InetAddress.getLocalHost();
                 myIp = ipAddress.getHostAddress();
             }
-            send(new NetworkPackage(new ConnectionDetails(myIp, myPort), "ConnectionDetails"));
+            send(new NetworkPackage(new ConnectionDetails(myIp, myPort)));
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -131,23 +131,20 @@ public class Networker implements INetworker, IGui {
                         Object object = (NetworkPackage) in.readObject();
                         NetworkPackage netPackage = (NetworkPackage) object;
                         String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-                        //System.out.println(timeStamp + " " + myName + " Server: " + netPackage.toString());
-                        //System.out.println(timeStamp + " " + myName + " Server: " + netPackage.typeOfObject);
 
-                        if ("HitRequest".equals(netPackage.typeOfObject)) {
+                        if (HitRequest.class.getSimpleName().equals(netPackage.typeOfObject)) {
                             HitRequest hitRequest = (HitRequest) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Server: I received a HitRequest @ " + hitRequest.x + " " + hitRequest.y);
                             receivedHitRequest(hitRequest);
-
-                        } else if ("HitResponse".equals(netPackage.typeOfObject)) {
+                        } else if (HitResponse.class.getSimpleName().equals(netPackage.typeOfObject)) {
                             HitResponse hitResponse = (HitResponse) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Server: I received a HitResponse @ " + hitResponse.x + " " + hitResponse.y);
                             receivedHitResponse(hitResponse);
-                        } else if ("StartGameRequest".equals(netPackage.typeOfObject)) {         
+                        } else if (StartGameRequest.class.getSimpleName().equals(netPackage.typeOfObject)) {         
                             StartGameRequest startGameRequest = (StartGameRequest) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Start game request received.");
                             receivedStartGameRequest(startGameRequest);
-                        } else if ("ConnectionDetails".equals(netPackage.typeOfObject)) {
+                        } else if (ConnectionDetails.class.getSimpleName().equals(netPackage.typeOfObject)) {
                             ConnectionDetails connectionDetails = (ConnectionDetails) netPackage.object;
                             System.out.println(timeStamp + " " + myName + " Server: I received connection details " + connectionDetails.ip + " " + connectionDetails.port);
                             if (socket == null) {

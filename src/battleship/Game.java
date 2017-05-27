@@ -123,7 +123,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
                 if (areAllShipsPlaced()) {
                     gameState = GameState.IS_WAITING_FOR_OPPONENT;
                     setStatusMessage("Sie haben alle ihre Schiffe platziert. Warten Sie bis ihr Gegner soweit ist.", StatusMessageType.INFO);
-                    this.myNetworker.send(new NetworkPackage(new StartGameRequest(this.myFirstTurnRandomNumber), "StartGameRequest"));
+                    this.myNetworker.send(new NetworkPackage(new StartGameRequest(this.myFirstTurnRandomNumber)));
                     determineFirstTurn();
                     gameChanged();
                 }
@@ -286,7 +286,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
         opponentPlayfield.shootAt(x, y);
         HitRequest hitRequest = new HitRequest(x, y);
         setStatusMessage("Schuss auf (" + x + "|" + y + "). Warte auf Rückmeldung des Gegners.", StatusMessageType.INFO);
-        myNetworker.send(new NetworkPackage(hitRequest, "HitRequest"));
+        myNetworker.send(new NetworkPackage(hitRequest));
         gameChanged();
         return hitRequest;
     }
@@ -399,7 +399,7 @@ public class Game implements IGame, IHitResponseReceived, IHitRequestReceived, I
                 }
             }
         }
-        myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+        myNetworker.send(new NetworkPackage(hitResponse));
         gameChanged();
     }
 

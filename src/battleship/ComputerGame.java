@@ -127,7 +127,7 @@ public class ComputerGame extends Game {
                     }
                 }
             }
-            myNetworker.send(new NetworkPackage(new StartGameRequest(myFirstTurnRandomNumber), "StartGameRequest"));
+            myNetworker.send(new NetworkPackage(new StartGameRequest(myFirstTurnRandomNumber)));
         }
     }
 
@@ -170,7 +170,7 @@ public class ComputerGame extends Game {
 
         if (myPlayfield.getFieldFromCoordinate(hitRequest.x, hitRequest.y).getState() == FieldState.SHIP_HIT) {
             hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
-            myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+            myNetworker.send(new NetworkPackage(hitResponse));
             gameChanged();
             startMyTurn();
             shoot();
@@ -179,13 +179,13 @@ public class ComputerGame extends Game {
 
             if (possibleShip == null) {
                 hitResponse = new HitResponse(hitRequest.x, hitRequest.y, false, false);
-                myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+                myNetworker.send(new NetworkPackage(hitResponse));
                 gameChanged();
                 startMyTurn();
                 shoot();
             } else {
                 hitResponse = new HitResponse(hitRequest.x, hitRequest.y, true, possibleShip.isDestroyed());
-                myNetworker.send(new NetworkPackage(hitResponse, "HitResponse"));
+                myNetworker.send(new NetworkPackage(hitResponse));
                 gameChanged();
                 endMyTurn();
             }

@@ -15,8 +15,8 @@ public class NetworkPackage implements Serializable {
     public final Object object;
     public final String typeOfObject;
     
-    public NetworkPackage(Object objectToSend, String typeOfObject) {
+    public NetworkPackage(Object objectToSend) {
         this.object = objectToSend;
-        this.typeOfObject = typeOfObject;
+        this.typeOfObject = objectToSend.getClass().getSimpleName();
     }       
 }
