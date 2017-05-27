@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package battleship.network;
 
 import battleship.IGameCanStart;
@@ -19,11 +14,10 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
- * @author Maï
+ * @author Louis Rast
  */
 public class Networker implements INetworker, IGui {
 
@@ -41,10 +35,6 @@ public class Networker implements INetworker, IGui {
 
     public Networker(String myName) {
         this.myName = myName;
-    }
-
-    public boolean askPlayerToJoin(String ipAddress, String hostname) {
-        return true;     // vorläufig zum compilieren
     }
 
     public String getMyIP() {
@@ -103,7 +93,6 @@ public class Networker implements INetworker, IGui {
     /**
      * Erstellt einen neuen Server der einkommende Packete empfängt.
      *
-     * @param port der Port des Servers.
      */
     public void startServer() {
 
@@ -115,7 +104,6 @@ public class Networker implements INetworker, IGui {
             @Override
             public void run() {
                 try {
-                    //ServerSocket ss = new ServerSocket(port);
                     ServerSocket ss = new ServerSocket(0);
                     myPort = ss.getLocalPort();
                     InetAddress ipAddress = InetAddress.getLocalHost();
@@ -162,6 +150,7 @@ public class Networker implements INetworker, IGui {
                 }
             }
         };
+        t.setName(myName + "Server listener.");
         t.start();
     }
 
